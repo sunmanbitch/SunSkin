@@ -1,4 +1,4 @@
-*.h linguist-language=Assembly
+*.h linguist-language=C
 *.hpp linguist-language=C++
 *.c linguist-language=C
 *.cpp linguist-language=C++
