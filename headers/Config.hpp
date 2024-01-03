@@ -4,7 +4,7 @@
 #include <filesystem>
 #include <map>
 
-#include "nlohmann/json.hpp"
+#include <nlohmann/json.hpp>
 
 #include "KeyBind.hpp"
 

@@ -4,10 +4,10 @@
 #include "AIBaseCommon.hpp"
 #include "fnv_hash.hpp"
 
-bool AIBaseCommon::checkSpecialSkins(const char* model, const std::int32_t skin) noexcept
+bool AIBaseCommon::checkSpecialSkins(const std::int32_t& skin) noexcept
 {
     const auto& dataStack{ this->get_character_data_stack() };
-    const auto champ_name{ fnv::hash_runtime(dataStack->base_skin.model.str) };
+    const auto& champ_name{ fnv::hash_runtime(dataStack->base_skin.model.str) };
     const std::int8_t& zero{ 0 };
     const std::int8_t& nonzero{ -1 };
 
@@ -33,7 +33,7 @@ void AIBaseCommon::change_skin(const char* model, const std::int32_t skin) noexc
     const auto& dataStack{ this->get_character_data_stack() };
     dataStack->base_skin.skin = skin;
 
-    if (this->checkSpecialSkins(model, skin))
+    if (this->checkSpecialSkins(skin))
     {
         if (!dataStack->stack.empty()) dataStack->stack.clear();
         dataStack->push(model, skin);
