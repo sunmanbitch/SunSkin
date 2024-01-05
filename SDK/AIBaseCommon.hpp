@@ -5,6 +5,7 @@
 #include "CharacterDataStack.hpp"
 #include "GameObject.hpp"
 #include "Cryption.hpp"
+#include "Offsets.hpp"
 
 class AIBaseCommon : public GameObject {
 public:

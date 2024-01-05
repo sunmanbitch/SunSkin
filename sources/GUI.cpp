@@ -16,7 +16,7 @@ inline static void footer() noexcept
     static const auto buildText{ "Last Build: "s + __DATE__ + " - " + __TIME__ };
     ImGui::Separator();
     ImGui::textUnformattedCentered(buildText.c_str());
-    ImGui::textUnformattedCentered("Copyright (C) 2021-2023 Sun");
+    ImGui::textUnformattedCentered("Copyright (C) 2024-2026 Sun");
 }
 
 static void changeTurretSkin(const std::int32_t skinId, const std::int32_t team) noexcept
@@ -26,10 +26,10 @@ static void changeTurretSkin(const std::int32_t skinId, const std::int32_t team)
 
     const auto& cheatManager{ CheatManager::getInstance() };
     const auto& turrets{ cheatManager.memory->turretList };
-    const auto& playerTeam{ *cheatManager.memory->localPlayer->get_team() };
+    const auto& playerTeam{ cheatManager.memory->localPlayer->get_team() };
 
     for (auto i{ 0u }; i < turrets->length; ++i) {
-        if (const auto& turret{ turrets->list[i] }; *turret->get_team() == team) {
+        if (const auto& turret{ turrets->list[i] }; turret->get_team() == team) {
             if (playerTeam == team) {
                 turret->get_character_data_stack()->base_skin.skin = skinId * 2;
                 turret->get_character_data_stack()->update();
@@ -49,7 +49,7 @@ void GUI::render() noexcept
 
     const auto player{ cheatManager.memory->localPlayer };
     const auto heroes{ cheatManager.memory->heroList };
-    static const auto my_team{ player ? *player->get_team() : 100 };
+    static const auto my_team{ player ? player->get_team() : 100 };
     static int gear{ player ? player->get_character_data_stack()->base_skin.gear : 0 };
 
     static const auto vector_getter_skin = [](void* vec, const std::int32_t idx, const char** out_text) noexcept {
@@ -59,9 +59,8 @@ void GUI::render() noexcept
         };
 
     static const auto vector_getter_ward_skin = [](void* vec, const std::int32_t idx, const char** out_text) noexcept {
-        const auto& vector{ *static_cast<std::vector<std::pair<std::int32_t, const char*>>*>(vec) };
-        if (idx < 0 || idx > static_cast<std::int32_t>(vector.size())) return false;
-        *out_text = idx == 0 ? "Default" : vector.at(idx - 1).second;
+        const auto& vector{ *static_cast<std::vector<const char*>*>(vec) };
+        *out_text = vector[idx];
         return true;
         };
 
@@ -73,9 +72,9 @@ void GUI::render() noexcept
         };
 
     static auto vector_getter_default = [](void* vec, const std::int32_t idx, const char** out_text) noexcept {
-        const auto& vector{ *static_cast<std::vector<const char*>*>(vec) };
+        const auto& vector{ *static_cast<std::vector<std::string>*>(vec) };
         if (idx < 0 || idx > static_cast<std::int32_t>(vector.size())) return false;
-        *out_text = idx == 0 ? "Default" : vector.at(idx - 1);
+        *out_text = idx == 0 ? "Default" : vector.at(idx - 1).c_str();
         return true;
         };
 
@@ -108,8 +107,8 @@ void GUI::render() noexcept
                     ImGui::Separator();
                 }
 
-                if (ImGui::Combo(CURRWARDSKIN, &cheatManager.config->current_combo_ward_index, vector_getter_ward_skin, static_cast<void*>(&cheatManager.database->wards_skins), cheatManager.database->wards_skins.size() + 1))
-                    cheatManager.config->current_ward_skin_index = cheatManager.config->current_combo_ward_index == 0 ? -1 : cheatManager.database->wards_skins.at(cheatManager.config->current_combo_ward_index - 1).first;
+                ImGui::Combo(CURRWARDSKIN, &cheatManager.config->current_ward_skin_id, vector_getter_ward_skin, static_cast<void*>(&cheatManager.database->wards_skins), cheatManager.database->wards_skins.size());
+
                 footer();
                 ImGui::EndTabItem();
             }
@@ -129,7 +128,7 @@ void GUI::render() noexcept
                     if (champion_name_hash == FNV("PracticeTool_TargetDummy"))
                         continue;
 
-                    const auto hero_team{ *hero->get_team() };
+                    const auto hero_team{ hero->get_team() };
                     const auto is_enemy{ hero_team != my_team };
 
                     if (last_team == 0 || hero_team != last_team) {
@@ -166,12 +165,11 @@ void GUI::render() noexcept
                     changeTurretSkin(cheatManager.config->current_combo_chaos_turret_index - 1, 200);
                 ImGui::Separator();
                 ImGui::Text("Jungle Mobs Skins Settings:");
-                for (auto& [name, name_hashes, skins] : cheatManager.database->jungle_mobs_skins) {
-                    std::snprintf(str_buffer, 256, "Current %s skin", name);
-                    const auto [fst, snd] { cheatManager.config->current_combo_jungle_mob_skin_index.insert({ name_hashes.front(), 0 }) };
+                for (auto [name_hash, skins] : cheatManager.database->jungle_mobs_skins) {
+                    std::snprintf(str_buffer, 256, "Current %s skin", skins[0]);
+                    const auto [fst, snd] { cheatManager.config->current_combo_jungle_mob_skin_index.insert({ name_hash, 0 }) };
                     if (ImGui::Combo(str_buffer, &fst->second, vector_getter_default, &skins, skins.size() + 1))
-                        for (const auto& hash : name_hashes)
-                            cheatManager.config->current_combo_jungle_mob_skin_index[hash] = fst->second;
+                        cheatManager.config->current_combo_jungle_mob_skin_index[name_hash] = fst->second;
                 }
                 footer();
                 ImGui::EndTabItem();
@@ -183,14 +181,7 @@ void GUI::render() noexcept
             }
 
             if (ImGui::BeginTabItem("Extras")) {
-                ImGui::Text("Menu Key");
-                ImGui::SameLine();
-                ImGui::Button(ImGui::GetKeyName(cheatManager.config->menuKey.imGuiKeyCode));
-                if (ImGui::IsItemHovered(ImGuiHoveredFlags_Stationary | ImGuiHoveredFlags_DelayNormal | ImGuiHoveredFlags_NoSharedDelay))
-                {
-                    cheatManager.config->menuKey.setToPressedKey();
-                    ImGui::SetTooltip("Hovering the mouse over this button allows you to press other keys to rebind it.");
-                }
+                ImGui::ButtonEnableBind("Menu Key", cheatManager.config->menuKey, "Hovering the mouse over this button allows you to press other keys to rebind it.");
 
                 ImGui::Checkbox(cheatManager.config->heroName ? "HeroName based" : "PlayerName based", &cheatManager.config->heroName);
                 ImGui::Checkbox("Rainbow Text", &cheatManager.config->rainbowText);
@@ -200,23 +191,8 @@ void GUI::render() noexcept
                 if (cheatManager.config->quickSkinChange) {
                     ImGui::Separator();
 
-                    ImGui::Text("Previous Skin Key");
-                    ImGui::SameLine();
-                    ImGui::Button(ImGui::GetKeyName(cheatManager.config->previousSkinKey.imGuiKeyCode));
-                    if (ImGui::IsItemHovered(ImGuiHoveredFlags_Stationary | ImGuiHoveredFlags_DelayNormal | ImGuiHoveredFlags_NoSharedDelay))
-                    {
-                        cheatManager.config->previousSkinKey.setToPressedKey();
-                        ImGui::SetTooltip("Hovering the mouse over this button allows you to press other keys to rebind it.");
-                    }
-
-                    ImGui::Text("Next Skin Key");
-                    ImGui::SameLine();
-                    ImGui::Button(ImGui::GetKeyName(cheatManager.config->nextSkinKey.imGuiKeyCode));
-                    if (ImGui::IsItemHovered(ImGuiHoveredFlags_Stationary | ImGuiHoveredFlags_DelayNormal | ImGuiHoveredFlags_NoSharedDelay))
-                    {
-                        cheatManager.config->nextSkinKey.setToPressedKey();
-                        ImGui::SetTooltip("Hovering the mouse over this button allows you to press other keys to rebind it.");
-                    }
+                    ImGui::ButtonEnableBind("Previous Skin Key", cheatManager.config->previousSkinKey, "Hovering the mouse over this button allows you to press other keys to rebind it.");
+                    ImGui::ButtonEnableBind("Next Skin Key", cheatManager.config->nextSkinKey, "Hovering the mouse over this button allows you to press other keys to rebind it.");
 
                     ImGui::Separator();
                 }
@@ -226,10 +202,10 @@ void GUI::render() noexcept
 
                 if (ImGui::Button("No skins except local player")) {
                     for (auto& val : cheatManager.config->current_combo_enemy_skin_index | std::views::values)
-                        val = 1;
+                        val = 0;
 
                     for (auto& val : cheatManager.config->current_combo_ally_skin_index | std::views::values)
-                        val = 1;
+                        val = 0;
 
                     for (auto i{ 0u }; i < heroes->length; ++i) {
                         if (const auto hero{ heroes->list[i] }; hero != player)
@@ -247,7 +223,7 @@ void GUI::render() noexcept
 
                         const auto skinCount{ cheatManager.database->champions_skins[championHash].size() };
                         auto& skinDatabase{ cheatManager.database->champions_skins[championHash] };
-                        auto& config{ (*hero->get_team() != my_team) ? cheatManager.config->current_combo_enemy_skin_index : cheatManager.config->current_combo_ally_skin_index };
+                        auto& config{ (hero->get_team() != my_team) ? cheatManager.config->current_combo_enemy_skin_index : cheatManager.config->current_combo_ally_skin_index };
 
                         if (hero == player) {
                             cheatManager.config->current_combo_skin_index = random(1ull, skinCount - 1);

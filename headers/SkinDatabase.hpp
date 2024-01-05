@@ -6,6 +6,7 @@
 #include <vector>
 #include <compare>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "fnv_hash.hpp"
 
@@ -20,9 +21,8 @@ public:
 
     class jungle_mob_skin_info {
     public:
-        const char* name;
-        std::vector<std::uint64_t> name_hashes;
-        std::vector<const char*> skins;
+        std::uint64_t name_hash;
+        std::vector<std::string> skins;
     };
 
     class specialSkin {
@@ -36,9 +36,9 @@ public:
     void load() noexcept;
 
     void loadWardsSkins() noexcept;
-    std::vector<std::pair<std::uint32_t, const char*>> wards_skins;
+    std::vector<const char*> wards_skins;
 
-    std::vector<const char*> minions_skins{
+    std::vector<std::string> minions_skins{
         "Minion", "Summer Minion",
         "Project Minion", "Snowdown Minion",
         "Draven Minion", "Star Guardian Minion",
@@ -46,7 +46,7 @@ public:
         "Odyssey Minion", "Mouse Minion", "Arcane Minion"
     };
 
-    std::vector<const char*> turret_skins{
+    std::vector<std::string> turret_skins{
         "Default Order Turret", "Default Chaos Turret",
         "Snow Order Turret", "Snow Chaos Turret",
         "Twisted Treeline Order Turret", "Twisted Treeline Chaos Turret",
@@ -58,35 +58,29 @@ public:
         "Howling Abyss Order Turret", "Howling Abyss Chaos Turret"
     };
 
-    std::vector<jungle_mob_skin_info> jungle_mobs_skins{
+    const std::vector<jungle_mob_skin_info> jungle_mobs_skins{
         {
-            "Baron",
-            { FNV("SRU_Baron") },
+            FNV("Baron"),
             { "Baron", "Snowdown Baron", "Championship Baron", "Lunar Revel Baron", "MSI Baron", "Odyssey Baron", "Championship Birthday Baron", "Ruined King Baron" }
         },
         {
-            "Blue",
-            { FNV("SRU_Blue") },
+            FNV("Blue"),
             { "Blue", "Dark Blue", "Pool Party Blue", "Ruined King Blue" }
         },
         {
-            "Red",
-            { FNV("SRU_Red") },
+            FNV("Red"),
             { "Red", "Pool Party Red", "Ruined King Red" }
         },
         {
-            "Scuttle",
-            { FNV("Sru_Crab") },
-            { "Scuttle", "Halloween Light Scuttle", "Halloween Dark Scuttle", "Ruined King Scuttle" }
+            FNV("Crab"),
+            { "Crab", "Halloween Light Scuttle", "Halloween Dark Scuttle", "Ruined King Scuttle" }
         },
         {
-            "Krug",
-            { FNV("SRU_Krug"), FNV("SRU_KrugMini"), FNV("SRU_KrugMiniMini") },
+            FNV("Krug"),
             { "Krug", "Dark Krug" }
         },
         {
-            "Razorbeak",
-            { FNV("SRU_Razorbeak"), FNV("SRU_RazorbeakMini") },
+            FNV("Razorbeak"),
             { "Razorbeak", "Chicken Razorbeak" }
         }
     };
@@ -96,6 +90,50 @@ public:
         { FNV("Renekton"), 26, 32, { "Head off", "Head on", "Fins", "Ultimate" } },
         { FNV("MissFortune"), 16, 16, { "Scarlet fair", "Zero hour", "Royal arms", "Starswarm" } },
         { FNV("Ezreal"), 5, 5, { "Level 1", "Level 2", "Level 3" } }
+    };
+
+    const std::unordered_set<std::uint64_t> minionNames{
+        FNV("SRU_OrderMinionRanged"), FNV("SRU_OrderMinionMelee"), FNV("SRU_OrderMinionSiege"), FNV("SRU_OrderMinionSuper"),
+        FNV("SRU_ChaosMinionRanged"), FNV("SRU_ChaosMinionMelee"), FNV("SRU_ChaosMinionSiege"), FNV("SRU_ChaosMinionSuper")
+    };
+    const std::unordered_set<std::uint64_t> plants{ FNV("SRU_Plant_Health"), FNV("SRU_Plant_Satchel"), FNV("SRU_Plant_Vision"), FNV("SRU_PlantRespawnMarker") };
+    const std::unordered_set<std::uint64_t> vision{ FNV("JammerDevice"), FNV("YellowTrinket"), FNV("BlueTrinket"), FNV("SightWard"), FNV("VisionWard") };
+    const std::unordered_map<std::uint64_t, std::uint64_t> wild{
+        { FNV("SRU_Red"), FNV("Red") },
+        { FNV("SRU_Blue"), FNV("Blue") },
+        { FNV("SRU_Razorbeak"), FNV("Razorbeak"), },
+        { FNV("SRU_RazorbeakMini"), FNV("Razorbeak") },
+        { FNV("SRU_Krug"), FNV("Krug"), },
+        { FNV("SRU_KrugMini"), FNV("Krug"), },
+        { FNV("SRU_KrugMiniMini"), FNV("Krug") },
+        { FNV("SRU_Murkwolf"), FNV("Murkwolf"), },
+        { FNV("SRU_MurkwolfMini"), FNV("Murkwolf") },
+        { FNV("SRU_Gromp"), FNV("Gromp") },
+        { FNV("Sru_Crab"), FNV("Crab") },
+        { FNV("SRU_Baron"), FNV("Baron") }
+    };
+    const std::unordered_map<std::uint64_t, std::uint64_t> targetMap{
+        { FNV("NunuSnowball"), FNV("Nunu") },
+        { FNV("KindredWolf"), FNV("Kindred") },
+        { FNV("QuinnValor"), FNV("Quinn") },
+    };
+    const std::uint64_t testCube{ FNV("TestCubeRender10Vision") };
+    const std::unordered_set<std::uint64_t> dragon{
+        FNV("SRU_Dragon_Air"),
+        FNV("SRU_Dragon_Earth"),
+        FNV("SRU_Dragon_Fire"),
+        FNV("SRU_Dragon_Water"),
+        FNV("SRU_Dragon_Hextech"),
+        FNV("SRU_Dragon_Chemtech"),
+        FNV("SRU_Dragon_Elder")
+    };
+    const std::unordered_set<std::uint64_t> other{
+        FNV("SRU_PlantRespawnMarker"),
+        FNV("SRU_CampRespawnMarker"),
+        FNV("SRU_RiftHerald"),
+        FNV("SRU_Jungle_Companions"),
+        FNV("PreSeason_Turret_Shield"),
+        FNV("DominationScout")
     };
 
     void loadHeroHash() noexcept;

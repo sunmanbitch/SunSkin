@@ -13,12 +13,9 @@ void ImGui::textUnformattedCentered(const char* text) noexcept
 
 void ImGui::hoverInfo(const char* desc) noexcept
 {
-    if (ImGui::IsItemHovered()) {
-        ImGui::BeginTooltip();
-        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-        ImGui::TextUnformatted(desc);
-        ImGui::PopTextWrapPos();
-        ImGui::EndTooltip();
+    if (ImGui::IsItemHovered(ImGuiHoveredFlags_Stationary | ImGuiHoveredFlags_DelayNormal | ImGuiHoveredFlags_NoSharedDelay))
+    {
+        ImGui::SetTooltip(desc);
     }
 }
 
@@ -89,4 +86,16 @@ bool ImGui::InputText(const char* label, std::string* str, ImGuiInputTextFlags f
     flags |= ImGuiInputTextFlags_CallbackResize;
     auto cbUserData{ InputTextCallback_UserData(str, callback, userData) };
     return InputText(label, const_cast<char*>(str->c_str()), str->capacity() + 1, flags, InputTextCallback, &cbUserData);
+}
+
+void ImGui::ButtonEnableBind(const char* desc, KeyBind& key_bind, const char* tips) noexcept
+{
+    ImGui::Text(desc);
+    ImGui::SameLine();
+    ImGui::Button(ImGui::GetKeyName(key_bind.imGuiKeyCode));
+    if (ImGui::IsItemHovered(ImGuiHoveredFlags_Stationary | ImGuiHoveredFlags_DelayNormal | ImGuiHoveredFlags_NoSharedDelay))
+    {
+        key_bind.setToPressedKey();
+        ImGui::SetTooltip(tips);
+    }
 }

@@ -32,8 +32,7 @@ public:
     std::int32_t current_minion_skin_index{ -1 };
 
     // ward
-    std::int32_t current_combo_ward_index{ 0 };
-    std::int32_t current_ward_skin_index{ -1 };
+    std::int32_t current_ward_skin_id{ 0 };
 
     // turrets, don't save them in config
     std::int32_t current_combo_order_turret_index{ 0 };

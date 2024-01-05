@@ -40,8 +40,7 @@ void Config::save() noexcept
     config_json["raibowText"] = this->rainbowText;
     config_json["quickSkinChange"] = this->quickSkinChange;
     config_json["fontScale"] = this->fontScale;
-    config_json["current_combo_ward_index"] = this->current_combo_ward_index;
-    config_json["current_ward_skin_index"] = this->current_ward_skin_index;
+    config_json["current_ward_skin_id"] = this->current_ward_skin_id;
     config_json["current_minion_skin_index"] = this->current_minion_skin_index;
 
     for (const auto& [fst, snd] : this->current_combo_ally_skin_index)
@@ -86,8 +85,7 @@ void Config::load() noexcept
     this->rainbowText = config_json.value("raibowText", false);
     this->quickSkinChange = config_json.value("quickSkinChange", false);
     this->fontScale = config_json.value("fontScale", 1.0f);
-    this->current_combo_ward_index = config_json.value("current_combo_ward_index", 0);
-    this->current_ward_skin_index = config_json.value("current_ward_skin_index", -1);
+    this->current_ward_skin_id = config_json.value("current_ward_skin_id", 0);
     this->current_minion_skin_index = config_json.value("current_minion_skin_index", -1);
 
     const auto ally_skins{ config_json.find("current_combo_ally_skin_index") };
@@ -128,10 +126,9 @@ void Config::reset() noexcept
     this->quickSkinChange = false;
     this->fontScale = 1.0f;
     this->current_combo_skin_index = 0;
-    this->current_combo_ward_index = 0;
+    this->current_ward_skin_id = 0;
     this->current_combo_minion_index = 0;
     this->current_minion_skin_index = -1;
-    this->current_ward_skin_index = -1;
     this->current_combo_order_turret_index = 0;
     this->current_combo_chaos_turret_index = 0;
     this->current_combo_ally_skin_index.clear();

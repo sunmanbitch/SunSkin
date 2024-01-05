@@ -99,7 +99,7 @@ void Hooks::init() noexcept
     else if (player && cheatManager.config->current_combo_skin_index <= 0 && cheatManager.database->heroSkinIndex[playerHash] > 0)
         cheatManager.config->current_combo_skin_index = cheatManager.database->heroSkinIndex[playerHash];
 
-    const auto& my_team{ player ? *player->get_team() : 100 };
+    const auto& my_team{ player ? player->get_team() : 100 };
     for (auto i{ 0u }; i < heroes->length; ++i) {
         const auto& hero{ heroes->list[i] };
         if (hero == player)
@@ -109,7 +109,7 @@ void Hooks::init() noexcept
         if (champion_name_hash == FNV("PracticeTool_TargetDummy"))
             continue;
 
-        const auto& is_enemy{ my_team != *hero->get_team() };
+        const auto& is_enemy{ my_team != hero->get_team() };
         auto& config_array{ is_enemy ? cheatManager.config->current_combo_enemy_skin_index : cheatManager.config->current_combo_ally_skin_index };
         const auto [fst, snd] {config_array.insert({ champion_name_hash, cheatManager.database->heroSkinIndex[champion_name_hash] })};
 

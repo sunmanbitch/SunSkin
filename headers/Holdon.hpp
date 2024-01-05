@@ -1,7 +1,11 @@
 #pragma once
 
+#include <unordered_map>
+#include <chrono>
 #include <d3d9.h>
 #include <d3d11.h>
+
+#include "AIMinionClient.hpp"
 
 class Holdon
 {
@@ -20,5 +24,7 @@ private:
     ID3D11DeviceContext* d3d11_device_context{ nullptr };
     ID3D11RenderTargetView* main_render_target_view{ nullptr };
     IDXGISwapChain* p_swap_chain{ nullptr };
+
+    std::unordered_map<AIMinionClient*, std::chrono::steady_clock::time_point> record_minions;
 };
 

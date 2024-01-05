@@ -80,11 +80,11 @@ private:
             true, false, true, 0, &offsets::global::ChampionManager
         },
         {
-            "48 89 0D ? ? ? ? 48 8D 05 ? ? ? ? 33 D2",
+            "48 89 0D ? ? ? 02 48 8D 05 ? ? ? 01 33 D2",
             true, false, true, 0, &offsets::global::ManagerTemplate_AIMinionClient_
         },
         {
-            "48 89 0D ? ? ? ? 48 8D 05 ? ? ? ? 33 D2 48 89 01 48 8D 05 ? ? ? ?",
+            "48 89 0D ? ? ? 01 48 8D 05 ? ? ? 01 33 D2",
             true, false, true, 0, &offsets::global::ManagerTemplate_AITurret_
         },
         {

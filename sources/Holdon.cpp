@@ -11,7 +11,7 @@
 void Holdon::create_render_target() noexcept
 {
     ID3D11Texture2D* back_buffer{ nullptr };
-    p_swap_chain->GetBuffer(0u, IID_PPV_ARGS(&back_buffer));
+    this->p_swap_chain->GetBuffer(0u, IID_PPV_ARGS(&back_buffer));
 
     if (back_buffer) {
         d3d11_device->CreateRenderTargetView(back_buffer, nullptr, &main_render_target_view);
@@ -265,16 +265,24 @@ void Holdon::keyEvent() noexcept
         // The codes you write here are executed when you press the F7 key in the game.
         // const auto minions{ cheatManager.memory->minionList };
         // for (auto i{ 0u }; i < minions->length; ++i) {
-        //     const auto minion{ minions->list[i] };
-        //     const auto owner{ minion->redirectTarget() };
-        //     cheatManager.logger->addLog("Minion: %s\n\tModelName: %s\n\t", minion->get_name()->c_str(), minion->get_character_data_stack()->base_skin.model.str);
-        //     if (owner)
-        //         cheatManager.logger->addLog("OwnerName: %s\n\t\tModelName: %s\n\t", owner->get_name()->c_str(), owner->get_character_data_stack()->base_skin.model.str);
-        //     cheatManager.logger->addLog("IsLaneMinion: %d\n\t", minion->isLaneMinion());
-        //     cheatManager.logger->addLog("IsEliteMinion: %d\n\t", minion->isEliteMinion());
-        //     cheatManager.logger->addLog("IsEpicMinion: %d\n\t", minion->isEpicMinion());
-        //     cheatManager.logger->addLog("IsMinion: %d\n\t", minion->isMinion());
-        //     cheatManager.logger->addLog("IsJungle: %d\n\n", minion->isJungle());
+        //     const auto& minion{ minions->list[i] };
+
+        //     if ((!minion->isMinion()) && (!minion->isJungle()))
+        //     {
+        //         const auto& owner{ minion->redirectTarget() };
+        //         if (owner) {}
+        //         else
+        //             cheatManager.logger->addLog("Minion: %s\tModelName: %s\n", minion->get_name()->c_str(), minion->get_character_data_stack()->base_skin.model.str);
+        //         // continue;
+        //         // if (owner)
+        //         //     cheatManager.logger->addLog("\tOwnerName: %s\tModelName: %s\n", owner->get_name()->c_str(), owner->get_character_data_stack()->base_skin.model.str);
+        //     }
+        // }
+
+        // const auto& turrets{ cheatManager.memory->turretList };
+        // for (auto i{ 0u }; i < turrets->length; ++i) {
+        //     const auto& turret{ turrets->list[i] };
+        //     cheatManager.logger->addLog("Turret: %s\tModelName: %s\n", turret->get_name()->c_str(), turret->get_character_data_stack()->base_skin.model.str);
         // }
     }
 
@@ -326,45 +334,64 @@ void Holdon::gameStatus() noexcept
 
     const auto& player{ cheatManager.memory->localPlayer };
     const auto& minions{ cheatManager.memory->minionList };
-    const auto& playerHash{ player ? cheatManager.database->heroHash[player->get_character_data_stack()->base_skin.model.str] : 0ull };
 
     for (auto i{ 0u }; i < minions->length; ++i) {
         const auto& minion{ minions->list[i] };
 
-        if (minion->isLaneMinion()) {
-            if (player && *player->get_team() == 200)
+        // todo: only update in screen
+        if (const auto& it{ record_minions.find(minion) }; it != record_minions.end() && it->second >= std::chrono::steady_clock::now())
+            continue;
+
+        if (minion->isOther())
+        {
+            for (const auto& it : record_minions)
+            {
+                if (std::chrono::steady_clock::now() > it.second)
+                    record_minions.erase(it.first);
+            }
+            const auto& expirationTime = std::chrono::steady_clock::now() + std::chrono::seconds(60 * 3);
+            record_minions[minion] = expirationTime;
+            continue;
+        }
+        else
+        {
+            const auto& expirationTime = std::chrono::steady_clock::now() + std::chrono::seconds(5);
+            record_minions[minion] = expirationTime;
+        }
+
+        if (minion->isMinion()) {
+            if (player && player->get_team() == 200)
                 changeSkinForObject(minion, cheatManager.config->current_minion_skin_index * 2 + 1);
             else
                 changeSkinForObject(minion, cheatManager.config->current_minion_skin_index * 2);
             continue;
         }
 
-        const auto hash{ fnv::hash_runtime(minion->get_character_data_stack()->base_skin.model.str) };
+        if (minion->isJungle())
+        {
+            const auto& wildName{ cheatManager.database->wild.find(minion->getModelHash())->second };
+            const auto& [origin, isAdd] { cheatManager.config->current_combo_jungle_mob_skin_index.insert({ wildName, 0 }) };
+            if (!isAdd)
+                changeSkinForObject(minion, cheatManager.config->current_combo_jungle_mob_skin_index[wildName]);
+            continue;
+        }
 
         if (const auto& owner{ minion->redirectTarget() }; owner) {
-            if (hash == FNV("JammerDevice") || hash == FNV("SightWard") || hash == FNV("YellowTrinket") || hash == FNV("VisionWard") || hash == FNV("BlueTrinket") || hash == FNV("TestCubeRender10Vision")) {
-                if (!player || owner == player) {
-                    if (hash == FNV("TestCubeRender10Vision") && playerHash == FNV("Yone"))
-                        changeModelForObject(minion, "Yone", owner->get_character_data_stack()->base_skin.skin);
-                    else if (hash == FNV("TestCubeRender10Vision"))
-                        changeSkinForObject(minion, 0);
-                    else
-                        changeSkinForObject(minion, cheatManager.config->current_ward_skin_index);
-                }
+            if (minion->isVision())
+            {
+                if (player && owner == player && cheatManager.config->current_ward_skin_id != 0)
+                    changeSkinForObject(minion, cheatManager.config->current_ward_skin_id);
             }
-            else if (hash != FNV("SRU_Jungle_Companions") && hash != FNV("DominationScout"))
+            else if (minion->isTestCube())
+            {
+                if (cheatManager.database->heroHash[owner->get_character_data_stack()->base_skin.model.str] == FNV("Yone"))
+                    changeModelForObject(minion, "Yone", owner->get_character_data_stack()->base_skin.skin);
+            }
+            else
                 changeSkinForObject(minion, owner->get_character_data_stack()->base_skin.skin);
             continue;
         }
 
-        if (const auto config_entry{ cheatManager.config->current_combo_jungle_mob_skin_index.find(hash) }; config_entry != cheatManager.config->current_combo_jungle_mob_skin_index.end() && config_entry->second != 0) {
-            changeSkinForObject(minion, config_entry->second - 1);
-            continue;
-        }
-
-        // Just LocalPlayer
-        if ((hash == FNV("NunuSnowball") && playerHash == FNV("Nunu")) || (hash == FNV("KindredWolf") && playerHash == FNV("Kindred")) || (hash == FNV("QuinnValor") && playerHash == FNV("Quinn")))
-            changeSkinForObject(minion, player->get_character_data_stack()->base_skin.skin);
     }
 
 }

@@ -48,24 +48,24 @@ void SkinDatabase::loadChampionsSkins() noexcept
                 it->second = it->second + 1;
             }
 
-            this->champions_skins[champ_name_hash].push_back({ champ_name, skin_display_name_translated, skin_id });
+            this->champions_skins[champ_name_hash].emplace_back(champ_name, skin_display_name_translated, skin_id);
             if (skin_id == 7 && champ_name_hash == FNV("Lux"))
             {
-                this->champions_skins[FNV("Lux")].push_back({ "LuxAir", skin_display_name_translated + " " + "Air", skin_id });
-                this->champions_skins[FNV("Lux")].push_back({ "LuxDark", skin_display_name_translated + " " + "Dark", skin_id });
-                this->champions_skins[FNV("Lux")].push_back({ "LuxFire", skin_display_name_translated + " " + "Fire", skin_id });
-                this->champions_skins[FNV("Lux")].push_back({ "LuxIce", skin_display_name_translated + " " + "Ice", skin_id });
-                this->champions_skins[FNV("Lux")].push_back({ "LuxMagma", skin_display_name_translated + " " + "Magma", skin_id });
-                this->champions_skins[FNV("Lux")].push_back({ "LuxMystic", skin_display_name_translated + " " + "Mystic", skin_id });
-                this->champions_skins[FNV("Lux")].push_back({ "LuxNature", skin_display_name_translated + " " + "Nature", skin_id });
-                this->champions_skins[FNV("Lux")].push_back({ "LuxStorm", skin_display_name_translated + " " + "Storm", skin_id });
-                this->champions_skins[FNV("Lux")].push_back({ "LuxWater", skin_display_name_translated + " " + "Water", skin_id });
+                this->champions_skins[FNV("Lux")].emplace_back("LuxAir", skin_display_name_translated + " " + "Air", skin_id);
+                this->champions_skins[FNV("Lux")].emplace_back("LuxDark", skin_display_name_translated + " " + "Dark", skin_id);
+                this->champions_skins[FNV("Lux")].emplace_back("LuxFire", skin_display_name_translated + " " + "Fire", skin_id);
+                this->champions_skins[FNV("Lux")].emplace_back("LuxIce", skin_display_name_translated + " " + "Ice", skin_id);
+                this->champions_skins[FNV("Lux")].emplace_back("LuxMagma", skin_display_name_translated + " " + "Magma", skin_id);
+                this->champions_skins[FNV("Lux")].emplace_back("LuxMystic", skin_display_name_translated + " " + "Mystic", skin_id);
+                this->champions_skins[FNV("Lux")].emplace_back("LuxNature", skin_display_name_translated + " " + "Nature", skin_id);
+                this->champions_skins[FNV("Lux")].emplace_back("LuxStorm", skin_display_name_translated + " " + "Storm", skin_id);
+                this->champions_skins[FNV("Lux")].emplace_back("LuxWater", skin_display_name_translated + " " + "Water", skin_id);
 
             }
             else if (skin_id == 6 && champ_name_hash == FNV("Sona"))
             {
-                this->champions_skins[FNV("Sona")].push_back({ "SonaDJGenre02", skin_display_name_translated + " " + "2", skin_id });
-                this->champions_skins[FNV("Sona")].push_back({ "SonaDJGenre03", skin_display_name_translated + " " + "3", skin_id });
+                this->champions_skins[FNV("Sona")].emplace_back("SonaDJGenre02", skin_display_name_translated + " " + "2", skin_id);
+                this->champions_skins[FNV("Sona")].emplace_back("SonaDJGenre03", skin_display_name_translated + " " + "3", skin_id);
             }
         }
     }
@@ -102,21 +102,20 @@ void SkinDatabase::loadHeroSkinId() noexcept
 void SkinDatabase::loadWardsSkins() noexcept
 {
     const auto& cheatManager{ CheatManager::getInstance() };
+    const auto& ward_pre{ "game_character_skin_displayname_SightWard_" };
 
-    // this->wards_skins.emplace_back(0u, "default");
+    this->wards_skins.push_back("default");
 
     for (auto ward_skin_id{ 1u };; ++ward_skin_id) {
-        const auto ward_display_name{ "game_character_skin_displayname_SightWard_" + std::to_string(ward_skin_id) };
+        const auto ward_display_name{ ward_pre + std::to_string(ward_skin_id) };
         const auto ward_display_name_translated{ cheatManager.memory->translateString(ward_display_name.c_str()) };
 
         if (ward_display_name == ward_display_name_translated)
             break;
 
-        this->wards_skins.emplace_back(ward_skin_id, ward_display_name_translated);
+        this->wards_skins.push_back(ward_display_name_translated);
     }
 
-    /* sort wards */
-    // std::ranges::sort(this->wards_skins, [](const auto& a, const auto& b) { return std::strong_ordering::less == std::strcmp(a.second, b.second) <=> 0; });
 }
 
 void SkinDatabase::loadHeroSkinIndex() noexcept
