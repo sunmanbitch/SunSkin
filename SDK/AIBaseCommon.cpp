@@ -23,21 +23,27 @@ bool AIBaseCommon::checkSpecialSkins(const std::int32_t& skin) noexcept
         return true;
     else if (champ_name == FNV("Sona") && skin == 6)
         return true;
+    else if (champ_name == FNV("TestCubeRender10Vision"))
+        return true;
 
     return false;
 }
 
-void AIBaseCommon::change_skin(const char* model, const std::int32_t skin) noexcept
+void AIBaseCommon::change_skin(const char* model, const std::int32_t skin, const bool isEncrypt) noexcept
 {
-    this->get_cryption()->encrypt(skin);
+    if (skin < 0) return;
+    if (isEncrypt) this->get_cryption()->encrypt(skin);
     const auto& dataStack{ this->get_character_data_stack() };
-    dataStack->base_skin.skin = skin;
 
     if (this->checkSpecialSkins(skin))
     {
+        dataStack->base_skin.skin = skin;
         if (!dataStack->stack.empty()) dataStack->stack.clear();
         dataStack->push(model, skin);
     }
-    else
+    else if (dataStack->base_skin.skin != skin)
+    {
+        dataStack->base_skin.skin = skin;
         dataStack->update();
+    }
 }

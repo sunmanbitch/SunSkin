@@ -34,7 +34,7 @@ namespace d3d_vtable {
             std::call_once(init_device, [&]() {
                 const auto& cheatManager{ CheatManager::getInstance() };
                 cheatManager.holdon->implDxInit(p_swap_chain);
-                cheatManager.hooks->init();
+                cheatManager.holdon->initHeroSkin();
                 });
             CheatManager::getInstance().holdon->render();
             return m_original(p_swap_chain, sync_interval, flags);
@@ -61,7 +61,7 @@ namespace d3d_vtable {
             std::call_once(init_device, [&]() {
                 const auto& cheatManager{ CheatManager::getInstance() };
                 cheatManager.holdon->implDxInit(p_device);
-                cheatManager.hooks->init();
+                cheatManager.holdon->initHeroSkin();
                 });
             CheatManager::getInstance().holdon->render(p_device);
             return m_original(p_device);
@@ -82,47 +82,6 @@ namespace d3d_vtable {
     };
     decltype(reset::m_original) reset::m_original;
 };
-
-void Hooks::init() noexcept
-{
-    const auto& cheatManager{ CheatManager::getInstance() };
-    const auto& player{ cheatManager.memory->localPlayer };
-    const auto& heroes{ cheatManager.memory->heroList };
-    const auto& playerHash{ player ? fnv::hash_runtime(player->get_character_data_stack()->base_skin.model.str) : 0u };
-
-    if (player && cheatManager.config->current_combo_skin_index > 0 && cheatManager.database->heroSkinIndex[playerHash] != cheatManager.config->current_combo_skin_index)
-    {
-        const auto& skinIndex{ cheatManager.config->current_combo_skin_index };
-        const auto& values{ cheatManager.database->champions_skins[fnv::hash_runtime(player->get_character_data_stack()->base_skin.model.str)] };
-        player->change_skin(values[skinIndex].model_name, values[skinIndex].skin_id);
-    }
-    else if (player && cheatManager.config->current_combo_skin_index <= 0 && cheatManager.database->heroSkinIndex[playerHash] > 0)
-        cheatManager.config->current_combo_skin_index = cheatManager.database->heroSkinIndex[playerHash];
-
-    const auto& my_team{ player ? player->get_team() : 100 };
-    for (auto i{ 0u }; i < heroes->length; ++i) {
-        const auto& hero{ heroes->list[i] };
-        if (hero == player)
-            continue;
-
-        const auto& champion_name_hash{ fnv::hash_runtime(hero->get_character_data_stack()->base_skin.model.str) };
-        if (champion_name_hash == FNV("PracticeTool_TargetDummy"))
-            continue;
-
-        const auto& is_enemy{ my_team != hero->get_team() };
-        auto& config_array{ is_enemy ? cheatManager.config->current_combo_enemy_skin_index : cheatManager.config->current_combo_ally_skin_index };
-        const auto [fst, snd] {config_array.insert({ champion_name_hash, cheatManager.database->heroSkinIndex[champion_name_hash] })};
-
-        if (snd)
-            continue;
-
-        if (fst->second > 0 && cheatManager.database->heroSkinIndex[champion_name_hash] != fst->second) {
-            const auto& values = cheatManager.database->champions_skins[champion_name_hash];
-            hero->change_skin(values[fst->second].model_name, values[fst->second].skin_id);
-        }
-    }
-
-}
 
 void Hooks::install() noexcept
 {

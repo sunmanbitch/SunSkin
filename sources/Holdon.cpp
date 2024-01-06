@@ -288,29 +288,6 @@ void Holdon::keyEvent() noexcept
 
 }
 
-static void changeModelForObject(const AIBaseCommon* obj, const char* model, const std::int32_t skin) noexcept
-{
-    if (skin == -1)
-        return;
-
-    if (const auto stack{ obj->get_character_data_stack() }; stack->base_skin.skin != skin) {
-        stack->base_skin.skin = skin;
-        stack->stack.clear();
-        stack->push(model, skin);
-    }
-}
-
-static void changeSkinForObject(const AIBaseCommon* obj, const std::int32_t skin) noexcept
-{
-    if (skin == -1)
-        return;
-
-    if (const auto stack{ obj->get_character_data_stack() }; stack->base_skin.skin != skin) {
-        stack->base_skin.skin = skin;
-        stack->update();
-    }
-}
-
 void Holdon::gameStatus() noexcept
 {
     const auto& cheatManager{ CheatManager::getInstance() };
@@ -323,7 +300,7 @@ void Holdon::gameStatus() noexcept
             continue;
 
         // Viego transforms into another champion as 2nd form, our own skin's id may not match for every champion. (same problem exists in sylas) 
-        if (const auto& championName{ cheatManager.database->heroHash[dataStack->base_skin.model.str] }; championName == FNV("Viego") || championName == FNV("Sylas"))
+        if (const auto& championName{ cheatManager.database->heroHash[dataStack->base_skin.model.str] }; championName == FNV("Viego") || championName == FNV("Sylas") || championName == FNV("Neeko"))
             continue;
 
         if (auto& stack{ dataStack->stack.front() }; stack.skin != dataStack->base_skin.skin) {
@@ -353,17 +330,16 @@ void Holdon::gameStatus() noexcept
             record_minions[minion] = expirationTime;
             continue;
         }
-        else
+
         {
             const auto& expirationTime = std::chrono::steady_clock::now() + std::chrono::seconds(5);
             record_minions[minion] = expirationTime;
         }
 
         if (minion->isMinion()) {
-            if (player && player->get_team() == 200)
-                changeSkinForObject(minion, cheatManager.config->current_minion_skin_index * 2 + 1);
-            else
-                changeSkinForObject(minion, cheatManager.config->current_minion_skin_index * 2);
+            const auto& skin_index{ cheatManager.config->current_minion_skin_index * 2 };
+            const auto minion_offset{ (player && player->get_team() == 200) ? 1 : 0 };
+            minion->change_skin(minion->get_character_data_stack()->base_skin.model.str, skin_index + minion_offset, false);
             continue;
         }
 
@@ -372,26 +348,63 @@ void Holdon::gameStatus() noexcept
             const auto& wildName{ cheatManager.database->wild.find(minion->getModelHash())->second };
             const auto& [origin, isAdd] { cheatManager.config->current_combo_jungle_mob_skin_index.insert({ wildName, 0 }) };
             if (!isAdd)
-                changeSkinForObject(minion, cheatManager.config->current_combo_jungle_mob_skin_index[wildName]);
+                minion->change_skin(minion->get_character_data_stack()->base_skin.model.str, cheatManager.config->current_combo_jungle_mob_skin_index[wildName], false);
             continue;
         }
 
         if (const auto& owner{ minion->redirectTarget() }; owner) {
             if (minion->isVision())
             {
-                if (player && owner == player && cheatManager.config->current_ward_skin_id != 0)
-                    changeSkinForObject(minion, cheatManager.config->current_ward_skin_id);
+                if (const auto& ward_skin{ cheatManager.config->current_ward_skin_id };player && owner == player && ward_skin != 0)
+                    minion->change_skin(minion->get_character_data_stack()->base_skin.model.str, ward_skin, false);
             }
             else if (minion->isTestCube())
             {
-                if (cheatManager.database->heroHash[owner->get_character_data_stack()->base_skin.model.str] == FNV("Yone"))
-                    changeModelForObject(minion, "Yone", owner->get_character_data_stack()->base_skin.skin);
+                if (const auto& base_skin{ owner->get_character_data_stack()->base_skin };cheatManager.database->heroHash[base_skin.model.str] == FNV("Yone"))
+                {
+                    minion->change_skin(base_skin.model.str, base_skin.skin, false); // base_skin.model.str == "Yone"
+                }
             }
             else
-                changeSkinForObject(minion, owner->get_character_data_stack()->base_skin.skin);
+            {
+                minion->change_skin(minion->get_character_data_stack()->base_skin.model.str, owner->get_character_data_stack()->base_skin.skin, false);
+            }
             continue;
         }
 
+    }
+
+}
+
+void Holdon::initHeroSkin() noexcept
+{
+    const auto& cheatManager{ CheatManager::getInstance() };
+    const auto& player{ cheatManager.memory->localPlayer };
+
+    if (player)
+    {
+        const auto& playerHash{ fnv::hash_runtime(player->get_character_data_stack()->base_skin.model.str) };
+        const auto& player_skin_index{ cheatManager.config->current_combo_skin_index };
+        const auto& values{ cheatManager.database->champions_skins[playerHash] };
+        player->change_skin(values[player_skin_index].model_name, values[player_skin_index].skin_id);
+    }
+
+    const auto& my_team{ player ? player->get_team() : 100 };
+    for (auto i{ 0u }; i < cheatManager.memory->heroList->length; ++i) {
+        const auto& hero{ cheatManager.memory->heroList->list[i] };
+
+        if (hero == player)
+            continue;
+
+        const auto& champion_name_hash{ fnv::hash_runtime(hero->get_character_data_stack()->base_skin.model.str) };
+        if (champion_name_hash == FNV("PracticeTool_TargetDummy"))
+            continue;
+
+        const auto& is_enemy{ my_team != hero->get_team() };
+        const auto& config_array{ is_enemy ? cheatManager.config->current_combo_enemy_skin_index : cheatManager.config->current_combo_ally_skin_index };
+        const auto& hero_skin_index{ config_array.at(champion_name_hash) };
+        const auto& values{ cheatManager.database->champions_skins[champion_name_hash] };
+        hero->change_skin(values[hero_skin_index].model_name, values[hero_skin_index].skin_id);
     }
 
 }

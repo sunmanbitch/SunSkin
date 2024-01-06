@@ -19,6 +19,8 @@ public:
     void render(IDirect3DDevice9*) noexcept;
     void keyEvent() noexcept;
     void gameStatus() noexcept;
+    void initHeroSkin() noexcept;
+
 private:
     ID3D11Device* d3d11_device{ nullptr };
     ID3D11DeviceContext* d3d11_device_context{ nullptr };

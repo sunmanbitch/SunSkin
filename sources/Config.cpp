@@ -88,25 +88,27 @@ void Config::load() noexcept
     this->current_ward_skin_id = config_json.value("current_ward_skin_id", 0);
     this->current_minion_skin_index = config_json.value("current_minion_skin_index", -1);
 
-    const auto ally_skins{ config_json.find("current_combo_ally_skin_index") };
-    if (ally_skins != config_json.end())
-        for (const auto& it : ally_skins.value().items())
-        {
-            const auto& heroNameHash{ std::stoull(it.key()) };
-            const auto& isFound{ cheatManager.database->heroSkinIndex.find(heroNameHash) != cheatManager.database->heroSkinIndex.end() };
-            const auto& heroSkinIndex{ isFound && cheatManager.database->heroSkinIndex[heroNameHash] != 0 ? cheatManager.database->heroSkinIndex[heroNameHash] : it.value().get<std::int32_t>() };
-            this->current_combo_ally_skin_index[heroNameHash] = heroSkinIndex;
-        }
+    const auto& ally_skins_object{ this->config_json.find("current_combo_ally_skin_index") };
+    const auto& enemy_skins_object{ this->config_json.find("current_combo_enemy_skin_index") };
+    const auto& my_team{ player ? player->get_team() : 100 };
 
-    const auto enemy_skins{ config_json.find("current_combo_enemy_skin_index") };
-    if (enemy_skins != config_json.end())
-        for (const auto& it : enemy_skins.value().items())
-        {
-            const auto& heroNameHash{ std::stoull(it.key()) };
-            const auto& isFound{ cheatManager.database->heroSkinIndex.find(heroNameHash) != cheatManager.database->heroSkinIndex.end() };
-            const auto& heroSkinIndex{ isFound && cheatManager.database->heroSkinIndex[heroNameHash] != 0 ? cheatManager.database->heroSkinIndex[heroNameHash] : it.value().get<std::int32_t>() };
-            this->current_combo_enemy_skin_index[heroNameHash] = heroSkinIndex;
-        }
+    for (auto i{ 0u }; i < cheatManager.memory->heroList->length; ++i)
+    {
+        const auto& hero{ cheatManager.memory->heroList->list[i] };
+        if (player == hero) continue;
+
+        const auto& heroHash{ cheatManager.database->heroHash[hero->get_character_data_stack()->base_skin.model.str] };
+        const auto& heroSkinIndex{ cheatManager.database->heroSkinIndex[heroHash] };
+        const auto& skins_object{ hero->get_team() == my_team ? ally_skins_object : enemy_skins_object };
+        auto& current_combo_skin_index{ hero->get_team() == my_team ? this->current_combo_ally_skin_index : this->current_combo_enemy_skin_index };
+
+        if (skins_object == this->config_json.end())
+            current_combo_skin_index[heroHash] = heroSkinIndex;
+        else if (const auto& it{ skins_object.value().find(std::to_string(heroHash)) }; it == skins_object.value().end())
+            current_combo_skin_index[heroHash] = heroSkinIndex;
+        else
+            current_combo_skin_index[heroHash] = it.value().get<std::int32_t>();
+    }
 
     const auto jungle_mobs_skins{ config_json.find("current_combo_jungle_mob_skin_index") };
     if (jungle_mobs_skins != config_json.end())
