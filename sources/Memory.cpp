@@ -95,6 +95,7 @@ void Memory::update(bool gameClient) noexcept
         this->minionList = *reinterpret_cast<ManagerTemplate<AIMinionClient>**>(this->base + offsets::global::ManagerTemplate_AIMinionClient_);
         this->turretList = *reinterpret_cast<ManagerTemplate<AITurret>**>(this->base + offsets::global::ManagerTemplate_AITurret_);
         this->championManager = *reinterpret_cast<ChampionManager**>(this->base + offsets::global::ChampionManager);
+        this->viewProjMatrix = *reinterpret_cast<ViewProjMatrix**>(this->base + offsets::global::ViewProjMatrix);
         this->materialRegistry = reinterpret_cast<std::uintptr_t(__fastcall*)()>(this->base + offsets::functions::Riot__Renderer__MaterialRegistry__GetSingletonPtr)();
         this->d3dDevice = *reinterpret_cast<IDirect3DDevice9**>(this->materialRegistry + offsets::MaterialRegistry::D3DDevice);
         this->swapChain = *reinterpret_cast<IDXGISwapChain**>(this->materialRegistry + offsets::MaterialRegistry::SwapChain);
@@ -103,6 +104,7 @@ void Memory::update(bool gameClient) noexcept
         this->characterDataStackUpdate = reinterpret_cast<characterDataStackUpdate_t>(this->base + offsets::functions::CharacterDataStack__Update);
         this->characterDataStackPush = reinterpret_cast<characterDataStackPush_t>(this->base + offsets::functions::CharacterDataStack__Push);
         this->getGoldRedirectTarget = reinterpret_cast<getGoldRedirectTarget_t>(this->base + offsets::functions::GetGoldRedirectTarget);
+        this->WorldToScreen = reinterpret_cast<WorldToScreen_t>(this->base + offsets::functions::WorldToScreen);
     }
 }
 

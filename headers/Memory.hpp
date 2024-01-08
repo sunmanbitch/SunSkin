@@ -14,6 +14,9 @@
 #include "ChampionManager.hpp"
 #include "GameClient.hpp"
 #include "ManagerTemplate.hpp"
+#include "ViewProjMatrix.hpp"
+#include "Renderer.hpp"
+#include "Position.hpp"
 
 class offset_signature {
 public:
@@ -39,6 +42,7 @@ public:
     ManagerTemplate<AIMinionClient>* minionList;
     ManagerTemplate<AITurret>* turretList;
     ChampionManager* championManager;
+    ViewProjMatrix* viewProjMatrix;
 
     std::uintptr_t materialRegistry;
     IDirect3DDevice9* d3dDevice;
@@ -48,12 +52,14 @@ public:
     using characterDataStackUpdate_t = const void(__fastcall*)(const CharacterDataStack*, bool);
     using characterDataStackPush_t = const void(__fastcall*)(const CharacterDataStack*, const char*, int, int, bool, bool, bool, bool, bool, bool, int, const char*, int, const char*, int, bool, int);
     using getGoldRedirectTarget_t = const AIBaseCommon* (__fastcall*)(const AIMinionClient*);
+    using WorldToScreen_t = const bool(__fastcall*)(const Renderer*, const Position*, Position*);
 
     translateString_t translateString;
     characterDataStackUpdate_t characterDataStackUpdate;
     // push(self, model, skin, 0, false, false, false, false, true, false, -1, "\x00", 0, "\x00", 0, false, 1);
     characterDataStackPush_t characterDataStackPush;
     getGoldRedirectTarget_t getGoldRedirectTarget;
+    WorldToScreen_t WorldToScreen;
 private:
     void update(bool gameClient = true) noexcept;
 
@@ -92,12 +98,24 @@ private:
             true, false, true, 0, &offsets::global::Riot__g_window
         },
         {
+            "48 8B 1D ? ? ? ? 49 8D 95 ? ? ? ? 4C 8D",
+            true, false, true, 0, &offsets::global::ViewProjMatrix
+        },
+        {
+            "48 8D 8B ? ? ? ? E8 ?? ?? ?? ?? 49 8D 97 ?? ?? ?? ?? 4C 8D 45 D8",
+            false, true, false, 0, &offsets::ViewProjMatrix::Renderer
+        },
+        {
             "48 8D 8B ? ? ? ? 48 89 44 24 ? C7 44 24",
             false, true, false, 0, &offsets::AIBaseCommon::CharacterDataStack
         },
         {
             "40 38 BB ? ? ? ? 0F 85 ? ? ? ? 66 C7 83 ? ? ? ? ? ? 0F 31 48 C1 E2 20 4C 8D 83 ? ? ? ? 48 0B C2 44 8B CF 48 89 44 24 ? 8B D7",
             false, true, false, 0, &offsets::AIBaseCommon::SkinId
+        },
+        {
+            "48 8D 8D ? ? ? ? E8 ? ? ? ? 48 8B 54 24 78",
+            false, true, false, 0, &offsets::AIBaseCommon::Position
         },
         {
             "48 8B 8F ? ? 00 00 45 33 C0 8B D3 48 8B 01 FF 90 ? ? 00 00",
@@ -126,6 +144,10 @@ private:
         {
             "E8 ? ? ? ? 4C 3B F8 0F 94 C0",
             true, false, false, 0, &offsets::functions::GetGoldRedirectTarget
+        },
+        {
+            "E8 ?? ?? ?? ?? 49 8D 97 ?? ?? ?? ?? 4C 8D 45 D8",
+            true, false, false, 0, &offsets::functions::WorldToScreen
         }
     };
 

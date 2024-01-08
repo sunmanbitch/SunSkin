@@ -62,13 +62,18 @@ void Config::load() noexcept
     const auto& player{ cheatManager.memory->localPlayer };
     auto in{ std::ifstream(this->path / u8"SunSkin64") };
 
-    if (!in.good())
-        return;
-
-    if (json j{ json::parse(in, nullptr, false, true) }; j.is_discarded())
-        return;
+    if (in.good())
+    {
+        if (json j{ json::parse(in, nullptr, false, true) }; !j.is_discarded())
+            config_json = j;
+        in.close();
+    }
     else
-        config_json = j;
+    {
+        config_json = {
+            {"heroName", true}
+        };
+    }
 
     if (player)
     {
@@ -102,7 +107,7 @@ void Config::load() noexcept
         const auto& skins_object{ hero->get_team() == my_team ? ally_skins_object : enemy_skins_object };
         auto& current_combo_skin_index{ hero->get_team() == my_team ? this->current_combo_ally_skin_index : this->current_combo_enemy_skin_index };
 
-        if (skins_object == this->config_json.end())
+        if (heroSkinIndex != 0 || skins_object == this->config_json.end())
             current_combo_skin_index[heroHash] = heroSkinIndex;
         else if (const auto& it{ skins_object.value().find(std::to_string(heroHash)) }; it == skins_object.value().end())
             current_combo_skin_index[heroHash] = heroSkinIndex;
@@ -115,7 +120,6 @@ void Config::load() noexcept
         for (const auto& it : jungle_mobs_skins.value().items())
             this->current_combo_jungle_mob_skin_index[std::stoull(it.key())] = it.value().get<std::int32_t>();
 
-    in.close();
 }
 
 void Config::reset() noexcept

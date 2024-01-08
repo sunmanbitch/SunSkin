@@ -26,7 +26,4 @@ private:
     ID3D11DeviceContext* d3d11_device_context{ nullptr };
     ID3D11RenderTargetView* main_render_target_view{ nullptr };
     IDXGISwapChain* p_swap_chain{ nullptr };
-
-    std::unordered_map<AIMinionClient*, std::chrono::steady_clock::time_point> record_minions;
 };
-

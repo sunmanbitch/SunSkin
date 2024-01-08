@@ -284,6 +284,16 @@ void Holdon::keyEvent() noexcept
         //     const auto& turret{ turrets->list[i] };
         //     cheatManager.logger->addLog("Turret: %s\tModelName: %s\n", turret->get_name()->c_str(), turret->get_character_data_stack()->base_skin.model.str);
         // }
+
+        // const auto& position{ cheatManager.memory->localPlayer->get_position() };
+        // cheatManager.logger->addLog("[1] x: %f, y: %f, z: %f\n", position->x, position->y, position->z);
+
+        // const auto& positionV3{ cheatManager.memory->localPlayer->get_position() };
+        // Position position;
+        // cheatManager.memory->viewProjMatrix->get_renderer()->wroldToScreen(positionV3, &position);
+        // cheatManager.logger->addLog("[2] x: %f, y: %f\n", position.x, position.y);
+        // auto displaySize{ ImGui::GetIO().DisplaySize };
+        // cheatManager.logger->addLog("[3] x: %f, y: %f\n", displaySize.x, displaySize.y);
     }
 
 }
@@ -312,29 +322,22 @@ void Holdon::gameStatus() noexcept
     const auto& player{ cheatManager.memory->localPlayer };
     const auto& minions{ cheatManager.memory->minionList };
 
-    for (auto i{ 0u }; i < minions->length; ++i) {
-        const auto& minion{ minions->list[i] };
+    const std::vector<AIMinionClient*> minionVector(minions->list, &minions->list[minions->length - 1]);
+    for (const auto& minion : minionVector)
+    {
+        const auto& positionV3{ minion->get_position() };
+        Position positionV2;
+        cheatManager.memory->viewProjMatrix->get_renderer()->wroldToScreen(positionV3, &positionV2);
+        const auto displaySize{ ImGui::GetIO().DisplaySize };
+        const auto xCheck{ 0 <= positionV2.x && positionV2.x <= displaySize.x };
+        const auto yCheck{ 0 <= positionV2.y && positionV2.y <= displaySize.y };
+        const auto inScreen{ xCheck && yCheck };
 
-        // todo: only update in screen
-        if (const auto& it{ record_minions.find(minion) }; it != record_minions.end() && it->second >= std::chrono::steady_clock::now())
+        if (!inScreen)
             continue;
 
         if (minion->isOther())
-        {
-            for (const auto& it : record_minions)
-            {
-                if (std::chrono::steady_clock::now() > it.second)
-                    record_minions.erase(it.first);
-            }
-            const auto& expirationTime = std::chrono::steady_clock::now() + std::chrono::seconds(60 * 3);
-            record_minions[minion] = expirationTime;
             continue;
-        }
-
-        {
-            const auto& expirationTime = std::chrono::steady_clock::now() + std::chrono::seconds(5);
-            record_minions[minion] = expirationTime;
-        }
 
         if (minion->isMinion()) {
             const auto& skin_index{ cheatManager.config->current_minion_skin_index * 2 };

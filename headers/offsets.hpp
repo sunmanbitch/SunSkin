@@ -12,11 +12,17 @@ namespace offsets {
         inline std::uint64_t ManagerTemplate_AIHero_{ 0 };
         inline std::uint64_t ManagerTemplate_AITurret_{ 0 };
         inline std::uint64_t GameClient{ 0 };
+        inline std::uint64_t ViewProjMatrix{ 0 };
     };
+
+    namespace ViewProjMatrix {
+        inline std::uint64_t Renderer{ 0 };
+    }
 
     namespace AIBaseCommon {
         inline std::uint64_t CharacterDataStack{ 0 };
         inline std::uint64_t SkinId{ 0 };
+        inline std::uint64_t Position{ 0 };
     };
 
     namespace MaterialRegistry {
@@ -30,5 +36,6 @@ namespace offsets {
         inline std::uint64_t CharacterDataStack__Push{ 0 };
         inline std::uint64_t CharacterDataStack__Update{ 0 };
         inline std::uint64_t GetGoldRedirectTarget{ 0 };
+        inline std::uint64_t WorldToScreen{ 0 };
     };
 };
