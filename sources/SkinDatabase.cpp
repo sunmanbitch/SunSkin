@@ -76,9 +76,8 @@ void SkinDatabase::loadHeroHash() noexcept
 {
     const auto& cheatManager{ CheatManager::getInstance() };
 
-    for (auto i{ 0u }; i < cheatManager.memory->heroList->length; ++i)
+    for (const auto& hero : cheatManager.memory->heroes)
     {
-        const auto& hero{ cheatManager.memory->heroList->list[i] };
         const auto& heroName{ hero->get_character_data_stack()->base_skin.model.str };
         const auto& heroNameHash{ fnv::hash_runtime(heroName) };
         this->heroHash[heroName] = heroNameHash;
@@ -89,9 +88,8 @@ void SkinDatabase::loadHeroSkinId() noexcept
 {
     const auto& cheatManager{ CheatManager::getInstance() };
 
-    for (auto i{ 0u }; i < cheatManager.memory->heroList->length; ++i)
+    for (const auto& hero : cheatManager.memory->heroes)
     {
-        const auto& hero{ cheatManager.memory->heroList->list[i] };
         const auto& heroNameHash{ this->heroHash[hero->get_character_data_stack()->base_skin.model.str] };
         if (heroNameHash == FNV("PracticeTool_TargetDummy")) { continue; }
         const auto& heroSkinId{ hero->get_character_data_stack()->base_skin.skin };
@@ -121,7 +119,12 @@ void SkinDatabase::loadWardsSkins() noexcept
 void SkinDatabase::loadHeroSkinIndex() noexcept
 {
     for (const auto& [champ_name_hash, skin_list] : this->champions_skins)
+    {
         for (auto i{ 0u }; i < skin_list.size(); ++i)
-            if (skin_list[i].skin_id == this->heroSkinIds[champ_name_hash])
-                this->heroSkinIndex[champ_name_hash] = i;
+        {
+            if (this->heroSkinIds[champ_name_hash] != skin_list[i].skin_id)
+                continue;
+            this->heroSkinIndex[champ_name_hash] = i;
+        }
+    }
 }

@@ -32,6 +32,7 @@ class Memory {
 public:
     void Search(bool gameClient = true);
     bool checkRunning() noexcept;
+    std::vector<AIMinionClient*> getMinions() noexcept;
 
     std::uintptr_t base;
     HWND window;
@@ -43,6 +44,9 @@ public:
     ManagerTemplate<AITurret>* turretList;
     ChampionManager* championManager;
     ViewProjMatrix* viewProjMatrix;
+    std::vector<AIHero*> heroes;
+    std::vector<AITurret*> turrets;
+
 
     std::uintptr_t materialRegistry;
     IDirect3DDevice9* d3dDevice;

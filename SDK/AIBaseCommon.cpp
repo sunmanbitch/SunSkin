@@ -2,6 +2,7 @@
 #include <string>
 
 #include "AIBaseCommon.hpp"
+#include "CheatManager.hpp"
 #include "fnv_hash.hpp"
 
 bool AIBaseCommon::checkSpecialSkins(const std::int32_t& skin) noexcept
@@ -16,11 +17,9 @@ bool AIBaseCommon::checkSpecialSkins(const std::int32_t& skin) noexcept
     if (champ_name != FNV("Kayn"))
         dataStack->base_skin.gear = nonzero;
 
-    if (champ_name == FNV("Katarina") && (skin >= 29 && skin <= 36))
-        dataStack->base_skin.gear = zero;
-    else if (champ_name == FNV("Renekton") && (skin >= 26 && skin <= 32))
-        dataStack->base_skin.gear = zero;
-    else if (champ_name == FNV("MissFortune") && skin == 16)
+    const auto& cheatManager{ CheatManager::getInstance() };
+    const auto& it{ cheatManager.database->specialSkins.find(champ_name) };
+    if (it != cheatManager.database->specialSkins.end() && it->second.skinIdStart <= skin && skin <= it->second.skinIdEnd)
         dataStack->base_skin.gear = zero;
     else if (champ_name == FNV("Lux") && skin == 7)
         result = true;

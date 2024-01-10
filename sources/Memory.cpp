@@ -105,6 +105,9 @@ void Memory::update(bool gameClient) noexcept
         this->characterDataStackPush = reinterpret_cast<characterDataStackPush_t>(this->base + offsets::functions::CharacterDataStack__Push);
         this->getGoldRedirectTarget = reinterpret_cast<getGoldRedirectTarget_t>(this->base + offsets::functions::GetGoldRedirectTarget);
         this->WorldToScreen = reinterpret_cast<WorldToScreen_t>(this->base + offsets::functions::WorldToScreen);
+
+        this->heroes = std::vector<AIHero*>{ this->heroList->list, &this->heroList->list[this->heroList->length] };
+        this->turrets = std::vector<AITurret*>{ this->turretList->list, &this->turretList->list[this->turretList->length] };
     }
 }
 
@@ -131,6 +134,7 @@ void Memory::Search(bool gameClient)
                 if (!address) {
                     ::MessageBoxA(nullptr, ("Failed to find pattern: " + sig.pattern).c_str(), "SunSkin", MB_OK | MB_ICONWARNING);
                     // cheatManager.logger->addLog("Not found: %s\n", pattern.c_str());
+                    missing_offset = true;
                     continue;
                 }
 
@@ -169,8 +173,10 @@ void Memory::Search(bool gameClient)
 
 bool Memory::checkRunning() noexcept
 {
-    if (this->client && this->client->game_state == GGameState_s::Running)
-        return true;
-    else
-        return false;
+    return (this->client && this->client->game_state == GGameState_s::Running);
+}
+
+std::vector<AIMinionClient*> Memory::getMinions() noexcept
+{
+    return std::vector<AIMinionClient*>{this->minionList->list, & this->minionList->list[this->minionList->length]};
 }

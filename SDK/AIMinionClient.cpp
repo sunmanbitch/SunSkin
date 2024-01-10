@@ -10,13 +10,17 @@ const AIBaseCommon* AIMinionClient::redirectTarget() noexcept
 
     const auto& modelHash{ this->getModelHash() };
     const auto& targetMap{ cheatManager.database->targetMap };
-    if (auto it{ targetMap.find(modelHash) }; it != targetMap.end())
-        for (auto i{ 0u }; i < cheatManager.memory->heroList->length; ++i)
-        {
-            const auto& hero{ cheatManager.memory->heroList->list[i] };
-            if (cheatManager.database->heroHash[hero->get_character_data_stack()->base_skin.model.str] == it->second)
-                return hero;
-        }
+
+    if (auto it{ targetMap.find(modelHash) }; it == targetMap.end())
+        return target;
+
+    const auto& hero_model_hash{ targetMap.at(modelHash) };
+    for (const auto& hero : cheatManager.memory->heroes)
+    {
+        if (hero_model_hash != cheatManager.database->heroHash[hero->get_character_data_stack()->base_skin.model.str])
+            continue;
+        return hero;
+    }
 
     return target;
 }

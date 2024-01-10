@@ -20,6 +20,7 @@ public:
     void keyEvent() noexcept;
     void gameStatus() noexcept;
     void initHeroSkin() noexcept;
+    void implDXShutdown() noexcept;
 
 private:
     ID3D11Device* d3d11_device{ nullptr };

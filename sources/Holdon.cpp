@@ -105,7 +105,7 @@ void Holdon::init_imgui() noexcept
     colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
     colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
 
-    auto& io{ ImGui::GetIO() };
+    auto& io{ ImGui::GetIO() }; (void)io;
     io.IniFilename = nullptr;
     io.LogFilename = nullptr;
     io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
@@ -169,7 +169,6 @@ void Holdon::render() noexcept
         this->keyEvent();
         this->gameStatus();
 
-        ImGui::EndFrame();
         ImGui::Render();
         d3d11_device_context->OMSetRenderTargets(1, &main_render_target_view, nullptr);
         ::ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
@@ -208,7 +207,7 @@ void Holdon::keyEvent() noexcept
     if (ImGui::IsKeyPressed(cheatManager.config->menuKey.imGuiKeyCode))
     {
         cheatManager.gui->is_open = !cheatManager.gui->is_open;
-        if (!cheatManager.gui->is_open) { cheatManager.config->save(); }
+        if (!cheatManager.gui->is_open) cheatManager.config->save();
     }
 
     if (cheatManager.config->quickSkinChange && ImGui::IsKeyPressed(cheatManager.config->nextSkinKey.imGuiKeyCode))
@@ -220,7 +219,6 @@ void Holdon::keyEvent() noexcept
             if (skinIndex < 0 || skinIndex >= values.size())
                 skinIndex = 0;
             player->change_skin(values[skinIndex].model_name, values[skinIndex].skin_id);
-
             cheatManager.config->save();
         }
     }
@@ -234,7 +232,6 @@ void Holdon::keyEvent() noexcept
             if (skinIndex < 0 || skinIndex >= values.size())
                 skinIndex = values.size() - 1;
             player->change_skin(values[skinIndex].model_name, values[skinIndex].skin_id);
-
             cheatManager.config->save();
         }
     }
@@ -242,20 +239,18 @@ void Holdon::keyEvent() noexcept
     if (ImGui::IsKeyPressed(ImGuiKey_5) && ImGui::IsKeyPressed(ImGuiKey_LeftCtrl)) {
         if (const auto& player{ cheatManager.memory->localPlayer }; player) {
             const auto playerHash{ fnv::hash_runtime(player->get_character_data_stack()->base_skin.model.str) };
-            if (const auto it{ std::ranges::find_if(cheatManager.database->specialSkins,
-                [&skin = player->get_character_data_stack()->base_skin.skin, &ph = playerHash](const SkinDatabase::specialSkin& x) noexcept -> bool
-                {
-                    return x.champHash == ph && (x.skinIdStart <= skin && x.skinIdEnd >= skin);
-                }) }; it != cheatManager.database->specialSkins.end())
+
+            const auto& skin{ player->get_character_data_stack()->base_skin.skin };
+            const auto& it{ cheatManager.database->specialSkins.find(playerHash) };
+            if (it != cheatManager.database->specialSkins.end() && it->second.skinIdStart <= skin && it->second.skinIdEnd >= skin)
             {
                 const auto stack{ player->get_character_data_stack() };
-                if (stack->base_skin.gear < static_cast<std::int8_t>(it->gears.size()) - 1)
+                if (stack->base_skin.gear < static_cast<std::int8_t>(it->second.gears.size()) - 1)
                     ++stack->base_skin.gear;
                 else
                     stack->base_skin.gear = static_cast<std::int8_t>(0);
 
                 stack->update();
-
             }
         }
     }
@@ -301,10 +296,25 @@ void Holdon::keyEvent() noexcept
 void Holdon::gameStatus() noexcept
 {
     const auto& cheatManager{ CheatManager::getInstance() };
-    const auto& heroes{ cheatManager.memory->heroList };
 
-    for (auto i{ 0u }; i < heroes->length; ++i) {
-        const auto& dataStack{ heroes->list[i]->get_character_data_stack() };
+    for (const auto& hero : cheatManager.memory->heroes) {
+        const auto& positionV3{ hero->get_position() };
+        Position positionV2;
+        cheatManager.memory->viewProjMatrix->get_renderer()->wroldToScreen(positionV3, &positionV2);
+
+        const auto displaySize{ ImGui::GetIO().DisplaySize };
+        const auto xCheck{ 0 <= positionV2.x && positionV2.x <= displaySize.x };
+        const auto yCheck{ 0 <= positionV2.y && positionV2.y <= displaySize.y };
+        const auto inScreen{ xCheck && yCheck };
+        if (!inScreen)
+            continue;
+
+        const auto& values{ cheatManager.database->champions_skins[fnv::hash_runtime(hero->get_character_data_stack()->base_skin.model.str)] };
+        const auto& skinIndex{ cheatManager.config->current_combo_skin_index };
+        if (values[skinIndex].skin_id != hero->get_character_data_stack()->base_skin.skin)
+            hero->change_skin(values[skinIndex].model_name, values[skinIndex].skin_id, false);
+
+        const auto& dataStack{ hero->get_character_data_stack() };
 
         if (dataStack->stack.empty())
             continue;
@@ -319,11 +329,7 @@ void Holdon::gameStatus() noexcept
         }
     }
 
-    const auto& player{ cheatManager.memory->localPlayer };
-    const auto& minions{ cheatManager.memory->minionList };
-
-    const std::vector<AIMinionClient*> minionVector(minions->list, &minions->list[minions->length - 1]);
-    for (const auto& minion : minionVector)
+    for (const auto& minion : cheatManager.memory->getMinions())
     {
         const auto& positionV3{ minion->get_position() };
         Position positionV2;
@@ -341,6 +347,7 @@ void Holdon::gameStatus() noexcept
 
         if (minion->isMinion()) {
             const auto& skin_index{ cheatManager.config->current_minion_skin_index * 2 };
+            const auto& player{ cheatManager.memory->localPlayer };
             const auto minion_offset{ (player && player->get_team() == 200) ? 1 : 0 };
             minion->change_skin(minion->get_character_data_stack()->base_skin.model.str, skin_index + minion_offset, false);
             continue;
@@ -358,6 +365,7 @@ void Holdon::gameStatus() noexcept
         if (const auto& owner{ minion->redirectTarget() }; owner) {
             if (minion->isVision())
             {
+                const auto& player{ cheatManager.memory->localPlayer };
                 if (const auto& ward_skin{ cheatManager.config->current_ward_skin_id };player && owner == player && ward_skin != 0)
                     minion->change_skin(minion->get_character_data_stack()->base_skin.model.str, ward_skin, false);
             }
@@ -393,8 +401,7 @@ void Holdon::initHeroSkin() noexcept
     }
 
     const auto& my_team{ player ? player->get_team() : 100 };
-    for (auto i{ 0u }; i < cheatManager.memory->heroList->length; ++i) {
-        const auto& hero{ cheatManager.memory->heroList->list[i] };
+    for (const auto& hero : cheatManager.memory->heroes) {
 
         if (hero == player)
             continue;
@@ -410,4 +417,25 @@ void Holdon::initHeroSkin() noexcept
         hero->change_skin(values[hero_skin_index].model_name, values[hero_skin_index].skin_id);
     }
 
+}
+
+void Holdon::implDXShutdown() noexcept
+{
+    if (main_render_target_view)
+
+    {
+        ImGui_ImplDX11_Shutdown();
+        ImGui_ImplWin32_Shutdown();
+        ImGui::DestroyContext();
+        // if (main_render_target_view) { main_render_target_view->Release(); main_render_target_view = nullptr; }
+        // if (p_swap_chain) { p_swap_chain->Release(); p_swap_chain = nullptr; }
+        // if (d3d11_device_context) { d3d11_device_context->Release(); d3d11_device_context = nullptr; }
+        // if (d3d11_device) { d3d11_device->Release(); d3d11_device = nullptr; }
+    }
+    else
+    {
+        ImGui_ImplDX9_Shutdown();
+        ImGui_ImplWin32_Shutdown();
+        ImGui::DestroyContext();
+    }
 }

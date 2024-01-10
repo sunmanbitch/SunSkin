@@ -12,10 +12,10 @@ using json = nlohmann::json;
 
 class Config {
 public:
-    void init() noexcept;
-    void save() noexcept;
+    Config() noexcept;
+    ~Config() noexcept;
     void load() noexcept;
-    void reset() noexcept;
+    void save() noexcept;
 
     KeyBind menuKey{ KeyBind(ImGuiKey_Insert) };
     KeyBind nextSkinKey{ KeyBind(ImGuiKey_PageUp) };
@@ -45,6 +45,8 @@ public:
     // jungle mobs
     std::map<std::uint64_t, std::int32_t> current_combo_jungle_mob_skin_index;
 private:
+    void init() noexcept;
+
     std::filesystem::path path;
     json config_json{ json() };
 };

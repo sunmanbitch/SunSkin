@@ -38,24 +38,23 @@ DECLSPEC_SAFEBUFFERS static void WINAPI DllAttach([[maybe_unused]] LPVOID lp) no
         if (!cheatManager.memory->client)
         {
             std::this_thread::sleep_for(2s);
-            cheatManager.memory->Search(true);
+            cheatManager.memory->Search();
         }
         else if (cheatManager.memory->checkRunning())
+        {
+            cheatManager.logger->addLog("GameClient found!\n");
             break;
+        }
         else
             std::this_thread::sleep_for(1s);
     }
-    cheatManager.logger->addLog("GameClient found!\n");
 
-    std::this_thread::sleep_for(500ms);
     cheatManager.memory->Search(false);
     cheatManager.logger->addLog("All offsets found!\n");
-    std::this_thread::sleep_for(500ms);
 
     cheatManager.database->load();
     cheatManager.logger->addLog("All skins loaded from memory!\n");
 
-    cheatManager.config->init();
     cheatManager.config->load();
     cheatManager.logger->addLog("CFG loaded!\n");
 
