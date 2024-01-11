@@ -90,11 +90,11 @@ private:
             true, false, true, 0, &offsets::global::ChampionManager
         },
         {
-            "48 89 0D ? ? ? 02 48 8D 05 ? ? ? 01 33 D2",
+            "48 8B 0D ? ? ? ? E8 ? ? ? ? E8 ? ? ? ? E8 ? ? ? ? 48 8B C8",
             true, false, true, 0, &offsets::global::ManagerTemplate_AIMinionClient_
         },
         {
-            "48 89 0D ? ? ? 01 48 8D 05 ? ? ? 01 33 D2",
+            "48 8B 1D ? ? ? ? 48 8B 5B 28",
             true, false, true, 0, &offsets::global::ManagerTemplate_AITurret_
         },
         {
@@ -114,7 +114,7 @@ private:
             false, true, false, 0, &offsets::AIBaseCommon::CharacterDataStack
         },
         {
-            "40 38 BB ? ? ? ? 0F 85 ? ? ? ? 66 C7 83 ? ? ? ? ? ? 0F 31 48 C1 E2 20 4C 8D 83 ? ? ? ? 48 0B C2 44 8B CF 48 89 44 24 ? 8B D7",
+            "40 38 BB ? ? 00 00 0F 85 ? ? 00 00 66 C7 83 ? ? ? ? ? ? 0F 31 48 C1 E2 20 4C 8D 83 ? ? 00 00 48 0B C2 44 8B CF 48 89 44 24 ? 8B D7 48 63 C2",
             false, true, false, 0, &offsets::AIBaseCommon::SkinId
         },
         {

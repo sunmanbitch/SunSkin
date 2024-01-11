@@ -298,22 +298,6 @@ void Holdon::gameStatus() noexcept
     const auto& cheatManager{ CheatManager::getInstance() };
 
     for (const auto& hero : cheatManager.memory->heroes) {
-        const auto& positionV3{ hero->get_position() };
-        Position positionV2;
-        cheatManager.memory->viewProjMatrix->get_renderer()->wroldToScreen(positionV3, &positionV2);
-
-        const auto displaySize{ ImGui::GetIO().DisplaySize };
-        const auto xCheck{ 0 <= positionV2.x && positionV2.x <= displaySize.x };
-        const auto yCheck{ 0 <= positionV2.y && positionV2.y <= displaySize.y };
-        const auto inScreen{ xCheck && yCheck };
-        if (!inScreen)
-            continue;
-
-        const auto& values{ cheatManager.database->champions_skins[fnv::hash_runtime(hero->get_character_data_stack()->base_skin.model.str)] };
-        const auto& skinIndex{ cheatManager.config->current_combo_skin_index };
-        if (values[skinIndex].skin_id != hero->get_character_data_stack()->base_skin.skin)
-            hero->change_skin(values[skinIndex].model_name, values[skinIndex].skin_id, false);
-
         const auto& dataStack{ hero->get_character_data_stack() };
 
         if (dataStack->stack.empty())
