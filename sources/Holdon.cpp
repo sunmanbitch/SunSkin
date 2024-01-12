@@ -332,7 +332,7 @@ void Holdon::gameStatus() noexcept
         if (minion->isMinion()) {
             const auto& skin_index{ cheatManager.config->current_minion_skin_index * 2 };
             const auto& player{ cheatManager.memory->localPlayer };
-            const auto minion_offset{ (player && player->get_team() == 200) ? 1 : 0 };
+            const auto minion_offset{ (player && player->team == 200) ? 1 : 0 };
             minion->change_skin(minion->get_character_data_stack()->base_skin.model.str, skin_index + minion_offset, false);
             continue;
         }
@@ -384,7 +384,7 @@ void Holdon::initHeroSkin() noexcept
         player->change_skin(values[player_skin_index].model_name, values[player_skin_index].skin_id);
     }
 
-    const auto& my_team{ player ? player->get_team() : 100 };
+    const auto& my_team{ player ? player->team : 100 };
     for (const auto& hero : cheatManager.memory->heroes) {
 
         if (hero == player)
@@ -394,7 +394,7 @@ void Holdon::initHeroSkin() noexcept
         if (champion_name_hash == FNV("PracticeTool_TargetDummy"))
             continue;
 
-        const auto& is_enemy{ my_team != hero->get_team() };
+        const auto& is_enemy{ my_team != hero->team };
         const auto& config_array{ is_enemy ? cheatManager.config->current_combo_enemy_skin_index : cheatManager.config->current_combo_ally_skin_index };
         const auto& hero_skin_index{ config_array.at(champion_name_hash) };
         const auto& values{ cheatManager.database->champions_skins[champion_name_hash] };

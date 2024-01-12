@@ -6,22 +6,23 @@
 #define PAD_NAME(n) CONCAT(pad, n)
 #define PAD(size) std::byte PAD_NAME(__LINE__)[size]
 
-#define CLASS_GETTER(returnType, name, offset) \
-[[nodiscard]] inline returnType name() const noexcept \
-{ \
+#define CLASS_GETTER(returnType, name, offset)                            \
+[[nodiscard]] inline returnType name() const noexcept                     \
+{                                                                         \
 	return *reinterpret_cast<returnType*>(std::uintptr_t(this) + offset); \
 }
 
-#define CLASS_GETTER_P(returnType, name, offset) \
-[[nodiscard]] inline returnType* name() const noexcept \
-{ \
+#define CLASS_GETTER_P(returnType, name, offset)                         \
+[[nodiscard]] inline returnType* name() const noexcept                   \
+{                                                                        \
 	return reinterpret_cast<returnType*>(std::uintptr_t(this) + offset); \
 }
 
-template <std::size_t Index, typename ReturnType, typename... Args>
-ReturnType CallVirtual(std::uintptr_t instance, Args... args)
-{
-    using Fn = ReturnType(__fastcall*)(std::uintptr_t, Args...);
-    const auto function{ (*reinterpret_cast<Fn**>(instance))[Index] };
-    return function(instance, args...);
+#define DEFINE_MEMBER_0(x) x
+
+#define DEFINE_MEMBER_N(x,offset) \
+struct                            \
+{                                 \
+	PAD(offset);                  \
+    DEFINE_MEMBER_0(x);           \
 }

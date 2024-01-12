@@ -68,7 +68,7 @@ void Config::load() noexcept
 
     const auto& ally_skins_object{ this->config_json.find("current_combo_ally_skin_index") };
     const auto& enemy_skins_object{ this->config_json.find("current_combo_enemy_skin_index") };
-    const auto& my_team{ player ? player->get_team() : 100 };
+    const auto& my_team{ player ? player->team : 100 };
 
     for (const auto& hero : cheatManager.memory->heroes)
     {
@@ -76,8 +76,8 @@ void Config::load() noexcept
 
         const auto& heroHash{ cheatManager.database->heroHash[hero->get_character_data_stack()->base_skin.model.str] };
         const auto& heroSkinIndex{ cheatManager.database->heroSkinIndex[heroHash] };
-        const auto& skins_object{ hero->get_team() == my_team ? ally_skins_object : enemy_skins_object };
-        auto& current_combo_skin_index{ hero->get_team() == my_team ? this->current_combo_ally_skin_index : this->current_combo_enemy_skin_index };
+        const auto& skins_object{ hero->team == my_team ? ally_skins_object : enemy_skins_object };
+        auto& current_combo_skin_index{ hero->team == my_team ? this->current_combo_ally_skin_index : this->current_combo_enemy_skin_index };
 
         if (heroSkinIndex != 0 || skins_object == this->config_json.end())
             current_combo_skin_index[heroHash] = heroSkinIndex;

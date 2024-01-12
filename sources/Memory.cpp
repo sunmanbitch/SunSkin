@@ -87,24 +87,24 @@
 void Memory::update(bool gameClient) noexcept
 {
     if (gameClient) {
-        this->client = *reinterpret_cast<GameClient**>(this->base + offsets::global::GameClient);
+        this->client = *reinterpret_cast<GameClient**>(offsets::global::GameClient);
     }
     else {
-        this->localPlayer = *reinterpret_cast<AIBaseCommon**>(this->base + offsets::global::Player);
-        this->heroList = *reinterpret_cast<ManagerTemplate<AIHero>**>(this->base + offsets::global::ManagerTemplate_AIHero_);
-        this->minionList = *reinterpret_cast<ManagerTemplate<AIMinionClient>**>(this->base + offsets::global::ManagerTemplate_AIMinionClient_);
-        this->turretList = *reinterpret_cast<ManagerTemplate<AITurret>**>(this->base + offsets::global::ManagerTemplate_AITurret_);
-        this->championManager = *reinterpret_cast<ChampionManager**>(this->base + offsets::global::ChampionManager);
-        this->viewProjMatrix = *reinterpret_cast<ViewProjMatrix**>(this->base + offsets::global::ViewProjMatrix);
-        this->materialRegistry = reinterpret_cast<std::uintptr_t(__fastcall*)()>(this->base + offsets::functions::Riot__Renderer__MaterialRegistry__GetSingletonPtr)();
+        this->localPlayer = *reinterpret_cast<AIBaseCommon**>(offsets::global::Player);
+        this->heroList = *reinterpret_cast<ManagerTemplate<AIHero>**>(offsets::global::ManagerTemplate_AIHero_);
+        this->minionList = *reinterpret_cast<ManagerTemplate<AIMinionClient>**>(offsets::global::ManagerTemplate_AIMinionClient_);
+        this->turretList = *reinterpret_cast<ManagerTemplate<AITurret>**>(offsets::global::ManagerTemplate_AITurret_);
+        this->championManager = *reinterpret_cast<ChampionManager**>(offsets::global::ChampionManager);
+        this->viewProjMatrix = *reinterpret_cast<ViewProjMatrix**>(offsets::global::ViewProjMatrix);
+        this->materialRegistry = reinterpret_cast<materialRegistry_t>(offsets::functions::Riot__Renderer__MaterialRegistry__GetSingletonPtr)();
         this->d3dDevice = *reinterpret_cast<IDirect3DDevice9**>(this->materialRegistry + offsets::MaterialRegistry::D3DDevice);
         this->swapChain = *reinterpret_cast<IDXGISwapChain**>(this->materialRegistry + offsets::MaterialRegistry::SwapChain);
-        this->window = *reinterpret_cast<HWND*>(this->base + offsets::global::Riot__g_window);
-        this->translateString = reinterpret_cast<translateString_t>(this->base + offsets::functions::translateString_UNSAFE_DONOTUSE);
-        this->characterDataStackUpdate = reinterpret_cast<characterDataStackUpdate_t>(this->base + offsets::functions::CharacterDataStack__Update);
-        this->characterDataStackPush = reinterpret_cast<characterDataStackPush_t>(this->base + offsets::functions::CharacterDataStack__Push);
-        this->getGoldRedirectTarget = reinterpret_cast<getGoldRedirectTarget_t>(this->base + offsets::functions::GetGoldRedirectTarget);
-        this->WorldToScreen = reinterpret_cast<WorldToScreen_t>(this->base + offsets::functions::WorldToScreen);
+        this->window = *reinterpret_cast<HWND*>(offsets::global::Riot__g_window);
+        this->translateString = reinterpret_cast<translateString_t>(offsets::functions::translateString_UNSAFE_DONOTUSE);
+        this->characterDataStackUpdate = reinterpret_cast<characterDataStackUpdate_t>(offsets::functions::CharacterDataStack__Update);
+        this->characterDataStackPush = reinterpret_cast<characterDataStackPush_t>(offsets::functions::CharacterDataStack__Push);
+        this->getGoldRedirectTarget = reinterpret_cast<getGoldRedirectTarget_t>(offsets::functions::GetGoldRedirectTarget);
+        this->WorldToScreen = reinterpret_cast<WorldToScreen_t>(offsets::functions::WorldToScreen);
 
         this->heroes = std::vector<AIHero*>{ this->heroList->list, &this->heroList->list[this->heroList->length] };
         this->turrets = std::vector<AITurret*>{ this->turretList->list, &this->turretList->list[this->turretList->length] };
@@ -116,7 +116,6 @@ void Memory::Search(bool gameClient)
     using namespace std::chrono_literals;
 
     try {
-        this->base = reinterpret_cast<std::uintptr_t>(::GetModuleHandle(nullptr));
         const auto& signatureToSearch{ (gameClient ? this->gameClientSig : this->sigs) };
 
         for (const auto& sig : signatureToSearch)
@@ -129,7 +128,7 @@ void Memory::Search(bool gameClient)
                 if (*sig.offset != 0)
                     continue;
 
-                auto address{ find_signature(nullptr, sig.pattern.c_str()) };
+                const auto& address{ find_signature(nullptr, sig.pattern.c_str()) };
 
                 if (!address) {
                     ::MessageBoxA(nullptr, ("Failed to find pattern: " + sig.pattern).c_str(), "SunSkin", MB_OK | MB_ICONWARNING);
@@ -138,19 +137,15 @@ void Memory::Search(bool gameClient)
                     continue;
                 }
 
-                if (sig.read)
-                    address = *reinterpret_cast<std::uint8_t**>(address + (sig.pattern.find_first_of('?') / 3));
-                else if (sig.relative)
-                    address = address + *reinterpret_cast<std::uint32_t*>(address + 3) + 7;
-                else if (address[0] == 0xE8)
-                    address = address + *reinterpret_cast<std::uint32_t*>(address + 1) + 5;
+                if (sig.approach == Approach::only_read_x)
+                    *sig.offset = *reinterpret_cast<std::uint32_t*>(address + (sig.pattern.find_first_of('?') / 3) + sig.additional);
+                else if (sig.approach == Approach::mov_s_x)
+                    *sig.offset = reinterpret_cast<std::uintptr_t>(address + *reinterpret_cast<std::uint32_t*>(address + 3) + 7 + sig.additional);
+                else if (sig.approach == Approach::call_x)
+                    *sig.offset = reinterpret_cast<std::uintptr_t>(address + *reinterpret_cast<std::uint32_t*>(address + 1) + 5 + sig.additional);
+                else if (sig.approach == Approach::origin)
+                    *sig.offset = reinterpret_cast<std::uintptr_t>(address + sig.additional);
 
-                if (sig.sub_base)
-                    address -= this->base;
-
-                address += sig.additional;
-
-                *sig.offset = reinterpret_cast<std::uint32_t>(address);
                 // cheatManager.logger->addLog("Found: %s\n\tAddress: 0x%X\n", sig.pattern.c_str(), *sig.offset);
 
                 if (!*sig.offset) {

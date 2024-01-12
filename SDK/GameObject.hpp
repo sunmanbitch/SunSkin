@@ -4,9 +4,12 @@
 #include <string>
 
 #include "Pad.hpp"
+#include "offsets.hpp"
 
 class GameObject {
 public:
-	CLASS_GETTER(std::int32_t, get_team, 0x3C)
-	CLASS_GETTER_P(std::string, get_name, 0x60)
+    union {
+        DEFINE_MEMBER_N(std::int32_t team, offsets::GameObject::Team);
+        DEFINE_MEMBER_N(std::string name, offsets::GameObject::Name);
+    };
 };

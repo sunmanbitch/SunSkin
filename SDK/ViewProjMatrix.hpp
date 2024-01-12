@@ -6,5 +6,5 @@
 
 class ViewProjMatrix {
 public:
-    CLASS_GETTER_P(Renderer, get_renderer, offsets::ViewProjMatrix::Renderer)
+    CLASS_GETTER_P(Renderer, get_renderer, offsets::ViewProjMatrix::Renderer);
 };
