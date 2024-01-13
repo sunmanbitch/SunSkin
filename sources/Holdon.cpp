@@ -315,12 +315,12 @@ void Holdon::gameStatus() noexcept
 
     for (const auto& minion : cheatManager.memory->getMinions())
     {
-        const auto& positionV3{ minion->get_position() };
-        Position positionV2;
-        cheatManager.memory->viewProjMatrix->get_renderer()->wroldToScreen(positionV3, &positionV2);
-        const auto displaySize{ ImGui::GetIO().DisplaySize };
-        const auto xCheck{ 0 <= positionV2.x && positionV2.x <= displaySize.x };
-        const auto yCheck{ 0 <= positionV2.y && positionV2.y <= displaySize.y };
+        const auto& position3D{ minion->get_position() };
+        Position position2D;
+        cheatManager.memory->viewProjMatrix->get_renderer()->wroldToScreen(position3D, &position2D);
+        const auto& [dsplx, dsply] { ImGui::GetIO().DisplaySize };
+        const auto& xCheck{ 0 <= position2D.x && position2D.x <= dsplx };
+        const auto& yCheck{ 0 <= position2D.y && position2D.y <= dsply };
         const auto inScreen{ xCheck && yCheck };
 
         if (!inScreen)
@@ -330,7 +330,7 @@ void Holdon::gameStatus() noexcept
             continue;
 
         if (minion->isMinion()) {
-            const auto& skin_index{ cheatManager.config->current_minion_skin_index * 2 };
+            const auto& skin_index{ cheatManager.config->current_combo_minion_index * 2 };
             const auto& player{ cheatManager.memory->localPlayer };
             const auto minion_offset{ (player && player->team == 200) ? 1 : 0 };
             minion->change_skin(minion->get_character_data_stack()->base_skin.model.str, skin_index + minion_offset, false);
@@ -401,25 +401,4 @@ void Holdon::initHeroSkin() noexcept
         hero->change_skin(values[hero_skin_index].model_name, values[hero_skin_index].skin_id);
     }
 
-}
-
-void Holdon::implDXShutdown() noexcept
-{
-    if (main_render_target_view)
-
-    {
-        ImGui_ImplDX11_Shutdown();
-        ImGui_ImplWin32_Shutdown();
-        ImGui::DestroyContext();
-        // if (main_render_target_view) { main_render_target_view->Release(); main_render_target_view = nullptr; }
-        // if (p_swap_chain) { p_swap_chain->Release(); p_swap_chain = nullptr; }
-        // if (d3d11_device_context) { d3d11_device_context->Release(); d3d11_device_context = nullptr; }
-        // if (d3d11_device) { d3d11_device->Release(); d3d11_device = nullptr; }
-    }
-    else
-    {
-        ImGui_ImplDX9_Shutdown();
-        ImGui_ImplWin32_Shutdown();
-        ImGui::DestroyContext();
-    }
 }

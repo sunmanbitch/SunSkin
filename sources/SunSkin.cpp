@@ -30,33 +30,35 @@ DECLSPEC_SAFEBUFFERS static void WINAPI DllAttach([[maybe_unused]] LPVOID lp) no
     using namespace std::chrono_literals;
 
     const auto& cheatManager{ CheatManager::getInstance() };
+    const auto& logger{ cheatManager.logger };
+    const auto& memory{ cheatManager.memory };
 
     if (HideThread(::GetCurrentThread()))
-        cheatManager.logger->addLog("Thread Hidden!\n");
+        logger->addLog("Thread Hidden!\n");
 
     while (true) {
-        if (!cheatManager.memory->client)
+        if (!memory->client)
         {
             std::this_thread::sleep_for(2s);
-            cheatManager.memory->Search();
+            memory->Search();
         }
-        else if (cheatManager.memory->checkRunning())
+        else if (memory->checkRunning())
         {
-            cheatManager.logger->addLog("GameClient found!\n");
+            logger->addLog("GameClient found!\n");
             break;
         }
         else
             std::this_thread::sleep_for(1s);
     }
 
-    cheatManager.memory->Search(false);
-    cheatManager.logger->addLog("All offsets found!\n");
+    memory->Search(false);
+    logger->addLog("All offsets found!\n");
 
     cheatManager.database->load();
-    cheatManager.logger->addLog("All skins loaded from memory!\n");
+    logger->addLog("All skins loaded from memory!\n");
 
     cheatManager.config->load();
-    cheatManager.logger->addLog("CFG loaded!\n");
+    logger->addLog("CFG loaded!\n");
 
     cheatManager.hooks->install();
 

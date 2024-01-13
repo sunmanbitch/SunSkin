@@ -22,7 +22,9 @@ enum class Approach : std::int8_t {
     only_read_x,
     mov_s_x,
     call_x,
-    origin
+    origin,
+    enum_end,
+    enum_start = only_read_x
 };
 
 class offset_signature {
@@ -58,7 +60,7 @@ public:
 private:
     using translateString_t = const char* (__fastcall*)(const char*);
     using characterDataStackUpdate_t = const void(__fastcall*)(const CharacterDataStack*, bool);
-    using characterDataStackPush_t = const void(__fastcall*)(const CharacterDataStack*, const char*, int, int, bool, bool, bool, bool, bool, bool, int, const char*, int, const char*, int, bool, int);
+    using characterDataStackPush_t = std::uintptr_t(__fastcall*)(const CharacterDataStack*, const char*, std::int32_t, std::int32_t, bool, bool, bool, bool, bool, bool, std::int8_t, const char*, std::int32_t, const char*, std::int32_t, bool, std::int32_t);
     using getGoldRedirectTarget_t = const AIBaseCommon* (__fastcall*)(const AIMinionClient*);
     using WorldToScreen_t = const bool(__fastcall*)(const Renderer*, const Position*, Position*);
     using materialRegistry_t = std::uintptr_t(__fastcall*)();
@@ -136,8 +138,8 @@ private:
             Approach::only_read_x, 0, &offsets::MaterialRegistry::SwapChain
         },
         {
-            "E8 ? ? ? ? 41 8B 97 ? ? ? ? 48 8B 0D ? ? ? ?",
-            Approach::call_x, 0, &offsets::functions::CharacterDataStack__Push
+            "48 89 5C 24 08 48 89 74 24 10 48 89 7C 24 18 55 41 56 41 57 48 8D 6C 24 F9",
+            Approach::origin, 0, &offsets::functions::CharacterDataStack__Push
         },
         {
             "88 54 24 10 53 55 56 57 41 54 41 55 41 56 41",

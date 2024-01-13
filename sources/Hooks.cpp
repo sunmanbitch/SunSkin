@@ -112,7 +112,5 @@ void Hooks::uninstall() noexcept
     if (device_vmt)
         device_vmt->unhook();
 
-    cheatManager.holdon->implDXShutdown();
-
     CheatManager::getInstance().cheatState = false;
 }

@@ -9,13 +9,13 @@
 #define CLASS_GETTER(returnType, name, offset)                            \
 [[nodiscard]] inline returnType name() const noexcept                     \
 {                                                                         \
-	return *reinterpret_cast<returnType*>(std::uintptr_t(this) + offset); \
+    return *reinterpret_cast<returnType*>(std::uintptr_t(this) + offset); \
 }
 
 #define CLASS_GETTER_P(returnType, name, offset)                         \
 [[nodiscard]] inline returnType* name() const noexcept                   \
 {                                                                        \
-	return reinterpret_cast<returnType*>(std::uintptr_t(this) + offset); \
+    return reinterpret_cast<returnType*>(std::uintptr_t(this) + offset); \
 }
 
 #define DEFINE_MEMBER_0(x) x
@@ -23,6 +23,6 @@
 #define DEFINE_MEMBER_N(x,offset) \
 struct                            \
 {                                 \
-	PAD(offset);                  \
+    PAD(offset);                  \
     DEFINE_MEMBER_0(x);           \
 }

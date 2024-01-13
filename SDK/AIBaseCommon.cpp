@@ -7,17 +7,22 @@
 
 bool AIBaseCommon::checkSpecialSkins(const std::int32_t& skin) noexcept
 {
+    const auto& cheatManager{ CheatManager::getInstance() };
+    const auto& heroHash{ cheatManager.database->heroHash };
     const auto& dataStack{ this->get_character_data_stack() };
-    const auto& champ_name{ fnv::hash_runtime(dataStack->base_skin.model.str) };
-    const std::int8_t& zero{ 0 };
-    const std::int8_t& nonzero{ -1 };
 
     auto result{ false };
+
+    if (const auto& it{ heroHash.find(dataStack->base_skin.model.str) }; it == heroHash.end())
+        return result;
+
+    const auto& champ_name{ heroHash.at(dataStack->base_skin.model.str) };
+    const std::int8_t& zero{ 0 };
+    const std::int8_t& nonzero{ -1 };
 
     if (champ_name != FNV("Kayn"))
         dataStack->base_skin.gear = nonzero;
 
-    const auto& cheatManager{ CheatManager::getInstance() };
     const auto& it{ cheatManager.database->specialSkins.find(champ_name) };
     if (it != cheatManager.database->specialSkins.end() && it->second.skinIdStart <= skin && skin <= it->second.skinIdEnd)
         dataStack->base_skin.gear = zero;

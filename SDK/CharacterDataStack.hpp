@@ -10,5 +10,5 @@ public:
     CharacterStackData base_skin;
 public:
     void update(bool = true) noexcept;
-    void push(const char*, int, int=0, bool = false, bool = false, bool = false, bool = false, bool = true, bool = false, int = -1, const char* = "\x00", int = 0, const char* = "\x00", int = 0, bool = false, int = 1) noexcept;
+    void push(const char*, const std::int32_t) noexcept;
 };

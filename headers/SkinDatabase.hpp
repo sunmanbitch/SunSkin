@@ -22,7 +22,7 @@ public:
     class jungle_mob_skin_info {
     public:
         std::uint64_t name_hash;
-        std::vector<std::string> skins;
+        std::vector<const char*> skins;
     };
 
     class specialSkin {
@@ -34,10 +34,8 @@ public:
 
     void load() noexcept;
 
-    void loadWardsSkins() noexcept;
-    std::vector<const char*> wards_skins;
 
-    std::vector<std::string> minions_skins{
+    std::vector<const char*> minions_skins{
         "Minion", "Summer Minion",
         "Project Minion", "Snowdown Minion",
         "Draven Minion", "Star Guardian Minion",
@@ -45,7 +43,7 @@ public:
         "Odyssey Minion", "Mouse Minion", "Arcane Minion"
     };
 
-    std::vector<std::string> turret_skins{
+    std::vector<const char*> turret_skins{
         "Default Order Turret", "Default Chaos Turret",
         "Snow Order Turret", "Snow Chaos Turret",
         "Twisted Treeline Order Turret", "Twisted Treeline Chaos Turret",
@@ -135,15 +133,17 @@ public:
         FNV("DominationScout")
     };
 
-    void loadHeroHash() noexcept;
-    std::unordered_map<std::string, std::uint64_t> heroHash;
-
-    void loadHeroSkinId() noexcept;
+    std::unordered_map<const char*, std::uint64_t> heroHash;
     std::unordered_map<std::uint64_t, std::int32_t> heroSkinIds;
-
-    void loadChampionsSkins() noexcept;
-    std::map<std::uint64_t, std::vector<skin_info>> champions_skins;
-
-    void loadHeroSkinIndex() noexcept;
     std::unordered_map<std::uint64_t, std::int16_t> heroSkinIndex;
+    std::unordered_map<std::uint64_t, std::vector<skin_info>> champions_skins;
+    std::vector<const char*> wards_skins;
+
+private:
+    void loadHeroHash() noexcept;
+    void loadHeroSkinId() noexcept;
+    void loadChampionsSkins() noexcept;
+    void loadHeroSkinIndex() noexcept;
+    void loadWardsSkins() noexcept;
+
 };

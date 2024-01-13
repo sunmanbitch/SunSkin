@@ -11,16 +11,6 @@
 
 Config::Config() noexcept
 {
-    this->init();
-}
-
-Config::~Config() noexcept
-{
-    this->save();
-}
-
-void Config::init() noexcept
-{
     if (PWSTR pathToDocuments; SUCCEEDED(SHGetKnownFolderPath(FOLDERID_Documents, 0, nullptr, &pathToDocuments))) {
         this->path = pathToDocuments;
         CoTaskMemFree(pathToDocuments);
@@ -64,7 +54,6 @@ void Config::load() noexcept
     this->quickSkinChange = config_json.value("quickSkinChange", false);
     this->fontScale = config_json.value("fontScale", 1.0f);
     this->current_ward_skin_id = config_json.value("current_ward_skin_id", 0);
-    this->current_minion_skin_index = config_json.value("current_minion_skin_index", -1);
 
     const auto& ally_skins_object{ this->config_json.find("current_combo_ally_skin_index") };
     const auto& enemy_skins_object{ this->config_json.find("current_combo_enemy_skin_index") };
@@ -110,7 +99,7 @@ void Config::save() noexcept
     config_json["quickSkinChange"] = this->quickSkinChange;
     config_json["fontScale"] = this->fontScale;
     config_json["current_ward_skin_id"] = this->current_ward_skin_id;
-    config_json["current_minion_skin_index"] = this->current_minion_skin_index;
+    // config_json["current_minion_skin_index"] = this->current_minion_skin_index;
 
     for (const auto& [fst, snd] : this->current_combo_ally_skin_index)
         config_json["current_combo_ally_skin_index"][std::to_string(fst)] = snd;
