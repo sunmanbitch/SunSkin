@@ -38,8 +38,10 @@ public:
 class Memory {
 public:
     void Search(bool gameClient = true);
-    bool checkRunning() noexcept;
-    std::vector<AIMinionClient*> getMinions() noexcept;
+    inline bool checkRunning() noexcept
+    {
+        return (this->client && this->client->game_state == GGameState_s::Running);
+    }
 
     HWND window;
 
@@ -50,8 +52,6 @@ public:
     ManagerTemplate<AITurret>* turretList;
     ChampionManager* championManager;
     ViewProjMatrix* viewProjMatrix;
-    std::vector<AIHero*> heroes;
-    std::vector<AITurret*> turrets;
 
     std::uintptr_t materialRegistry;
     IDirect3DDevice9* d3dDevice;
@@ -75,7 +75,7 @@ public:
 private:
     void update(bool gameClient = true) noexcept;
 
-    std::vector<offset_signature> gameClientSig
+    const std::vector<offset_signature> gameClientSig
     {
         {
             "48 8B 05 ? ? ? ? 4C 8B FA 83 78 0C 02",
@@ -83,7 +83,7 @@ private:
         }
     };
 
-    std::vector<offset_signature> sigs
+    const std::vector<offset_signature> sigs
     {
         {
             "48 8B 3D ? ? ? ? 48 3B CF",

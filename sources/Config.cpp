@@ -1,6 +1,7 @@
 #include <fstream>
 #include <string>
 #include <system_error>
+#include <ranges>
 
 #include <Windows.h>
 #include <ShlObj.h>
@@ -41,9 +42,13 @@ void Config::load() noexcept
     if (player)
     {
         const auto& player_name{ player->get_character_data_stack()->base_skin.model.str };
-        const auto& current_combo_skin_index_key = std::string(player_name) + ".current_combo_skin_index";
-        const auto player_name_hash{ fnv::hash_runtime(player_name) };
-        this->current_combo_skin_index = config_json.value(current_combo_skin_index_key, cheatManager.database->heroSkinIndex[player_name_hash]);
+        const auto& player_name_hash{ cheatManager.database->heroHash.at(player_name) };
+        const auto& current_combo_skin_index_key = std::to_string(player_name_hash) + ".current_combo_skin_index";
+        const auto& skins{ cheatManager.database->champions_skins.at(player_name_hash) };
+
+        const auto& skinID{ player->get_character_data_stack()->base_skin.skin };
+        const auto& it{ std::ranges::find_if(skins, [&skinID](const auto& skin) { return skin.skin_id == skinID; }) };
+        this->current_combo_skin_index = config_json.value(current_combo_skin_index_key, it != skins.end() ? std::distance(skins.begin(), it) : 0);
     }
 
     this->menuKey = KeyBind(config_json.value("menuKey", ImGuiKey_Insert));
@@ -59,12 +64,17 @@ void Config::load() noexcept
     const auto& enemy_skins_object{ this->config_json.find("current_combo_enemy_skin_index") };
     const auto& my_team{ player ? player->team : 100 };
 
-    for (const auto& hero : cheatManager.memory->heroes)
+    for (const auto& hero : arr2vec(AIHero, cheatManager.memory->heroList))
     {
         if (player == hero) continue;
 
         const auto& heroHash{ cheatManager.database->heroHash[hero->get_character_data_stack()->base_skin.model.str] };
-        const auto& heroSkinIndex{ cheatManager.database->heroSkinIndex[heroHash] };
+
+        const auto& skins{ cheatManager.database->champions_skins[heroHash] };
+        const auto& skinID{ hero->get_character_data_stack()->base_skin.skin };
+        const auto& it{ std::ranges::find_if(skins, [&skinID](const auto& skin) { return skin.skin_id == skinID; }) };
+        const auto& heroSkinIndex{ it != skins.end() ? std::distance(skins.begin(), it) : 0 };
+
         const auto& skins_object{ hero->team == my_team ? ally_skins_object : enemy_skins_object };
         auto& current_combo_skin_index{ hero->team == my_team ? this->current_combo_ally_skin_index : this->current_combo_enemy_skin_index };
 
@@ -99,7 +109,6 @@ void Config::save() noexcept
     config_json["quickSkinChange"] = this->quickSkinChange;
     config_json["fontScale"] = this->fontScale;
     config_json["current_ward_skin_id"] = this->current_ward_skin_id;
-    // config_json["current_minion_skin_index"] = this->current_minion_skin_index;
 
     for (const auto& [fst, snd] : this->current_combo_ally_skin_index)
         config_json["current_combo_ally_skin_index"][std::to_string(fst)] = snd;

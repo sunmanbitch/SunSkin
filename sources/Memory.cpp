@@ -105,9 +105,6 @@ void Memory::update(bool gameClient) noexcept
         this->characterDataStackPush = reinterpret_cast<characterDataStackPush_t>(offsets::functions::CharacterDataStack__Push);
         this->getGoldRedirectTarget = reinterpret_cast<getGoldRedirectTarget_t>(offsets::functions::GetGoldRedirectTarget);
         this->WorldToScreen = reinterpret_cast<WorldToScreen_t>(offsets::functions::WorldToScreen);
-
-        this->heroes = std::vector<AIHero*>{ this->heroList->list, &this->heroList->list[this->heroList->length] };
-        this->turrets = std::vector<AITurret*>{ this->turretList->list, &this->turretList->list[this->turretList->length] };
     }
 }
 
@@ -164,14 +161,4 @@ void Memory::Search(bool gameClient)
     catch (const std::exception& e) {
         ::MessageBoxA(nullptr, e.what(), "SunSkin", MB_OK | MB_ICONWARNING);
     }
-}
-
-bool Memory::checkRunning() noexcept
-{
-    return (this->client && this->client->game_state == GGameState_s::Running);
-}
-
-std::vector<AIMinionClient*> Memory::getMinions() noexcept
-{
-    return std::vector<AIMinionClient*>{this->minionList->list, & this->minionList->list[this->minionList->length]};
 }

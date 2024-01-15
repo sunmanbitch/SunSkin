@@ -1,4 +1,5 @@
 #include "AIMinionClient.hpp"
+#include "AIHero.hpp"
 #include "CheatManager.hpp"
 #include "fnv_hash.hpp"
 
@@ -15,7 +16,7 @@ const AIBaseCommon* AIMinionClient::redirectTarget() noexcept
         return target;
 
     const auto& hero_model_hash{ targetMap.at(modelHash) };
-    for (const auto& hero : cheatManager.memory->heroes)
+    for (const auto& hero : arr2vec(AIHero, cheatManager.memory->heroList))
     {
         if (hero_model_hash != cheatManager.database->heroHash[hero->get_character_data_stack()->base_skin.model.str])
             continue;

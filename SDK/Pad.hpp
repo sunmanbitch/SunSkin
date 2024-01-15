@@ -26,3 +26,6 @@ struct                            \
     PAD(offset);                  \
     DEFINE_MEMBER_0(x);           \
 }
+
+#define arr2vec(obj, ptr) \
+std::vector<obj*>{ ptr->list, &ptr->list[ptr->length] }

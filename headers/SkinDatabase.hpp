@@ -133,17 +133,13 @@ public:
         FNV("DominationScout")
     };
 
-    std::unordered_map<const char*, std::uint64_t> heroHash;
-    std::unordered_map<std::uint64_t, std::int32_t> heroSkinIds;
-    std::unordered_map<std::uint64_t, std::int16_t> heroSkinIndex;
+    std::unordered_map<std::string, std::uint64_t> heroHash;
     std::unordered_map<std::uint64_t, std::vector<skin_info>> champions_skins;
     std::vector<const char*> wards_skins;
 
 private:
     void loadHeroHash() noexcept;
-    void loadHeroSkinId() noexcept;
     void loadChampionsSkins() noexcept;
-    void loadHeroSkinIndex() noexcept;
     void loadWardsSkins() noexcept;
 
 };

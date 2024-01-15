@@ -2,6 +2,8 @@
 
 #include "Holdon.hpp"
 #include "CheatManager.hpp"
+#include "AIHero.hpp"
+#include "AIMinionClient.hpp"
 
 #include "imgui.h"
 #include "imgui_impl_dx11.h"
@@ -297,7 +299,7 @@ void Holdon::gameStatus() noexcept
 {
     const auto& cheatManager{ CheatManager::getInstance() };
 
-    for (const auto& hero : cheatManager.memory->heroes) {
+    for (const auto& hero : arr2vec(AIHero, cheatManager.memory->heroList)) {
         const auto& dataStack{ hero->get_character_data_stack() };
 
         if (dataStack->stack.empty())
@@ -313,7 +315,7 @@ void Holdon::gameStatus() noexcept
         }
     }
 
-    for (const auto& minion : cheatManager.memory->getMinions())
+    for (const auto& minion : arr2vec(AIMinionClient, cheatManager.memory->minionList))
     {
         const auto& position3D{ minion->get_position() };
         Position position2D;
@@ -385,7 +387,7 @@ void Holdon::initHeroSkin() noexcept
     }
 
     const auto& my_team{ player ? player->team : 100 };
-    for (const auto& hero : cheatManager.memory->heroes) {
+    for (const auto& hero : arr2vec(AIHero, cheatManager.memory->heroList)) {
 
         if (hero == player)
             continue;
