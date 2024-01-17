@@ -129,7 +129,6 @@ void Memory::Search(bool gameClient)
 
                 if (!address) {
                     ::MessageBoxA(nullptr, ("Failed to find pattern: " + sig.pattern).c_str(), "SunSkin", MB_OK | MB_ICONWARNING);
-                    // cheatManager.logger->addLog("Not found: %s\n", pattern.c_str());
                     missing_offset = true;
                     continue;
                 }

@@ -51,6 +51,8 @@ void Config::load() noexcept
         this->current_combo_skin_index = config_json.value(current_combo_skin_index_key, it != skins.end() ? std::distance(skins.begin(), it) : 0);
     }
 
+    this->window_position = { config_json.value("window_position_x", 0.f), config_json.value("window_position_y", 0.f) };
+
     this->menuKey = KeyBind(config_json.value("menuKey", ImGuiKey_Insert));
     this->nextSkinKey = KeyBind(config_json.value("nextSkinKey", ImGuiKey_PageUp));
     this->previousSkinKey = KeyBind(config_json.value("previousSkinKey", ImGuiKey_PageDown));
@@ -99,8 +101,10 @@ void Config::save() noexcept
     const auto player{ cheatManager.memory->localPlayer };
 
     if (player)
-        config_json[std::string(player->get_character_data_stack()->base_skin.model.str) + ".current_combo_skin_index"] = this->current_combo_skin_index;
+        config_json[std::to_string(cheatManager.database->heroHash[player->get_character_data_stack()->base_skin.model.str]) + ".current_combo_skin_index"] = this->current_combo_skin_index;
 
+    config_json["window_position_x"] = this->window_position.x;
+    config_json["window_position_y"] = this->window_position.y;
     config_json["menuKey"] = this->menuKey.imGuiKeyCode;
     config_json["nextSkinKey"] = this->nextSkinKey.imGuiKeyCode;
     config_json["previousSkinKey"] = this->previousSkinKey.imGuiKeyCode;

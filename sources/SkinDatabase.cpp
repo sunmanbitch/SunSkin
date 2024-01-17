@@ -29,9 +29,11 @@ void SkinDatabase::loadChampionsSkins() noexcept
         const auto champ_name_hash{ this->heroHash[champ_name] };
 
         std::map<std::string, std::int32_t> temp_skin_list;
-        for (auto x{ 0u }; x < champion->skins.size; ++x) {
-            const auto skin_id{ champion->skins.list[x].skin_id };
-            const auto skin_display_name{ std::string("game_character_skin_displayname_") + champ_name + "_" + std::to_string(skin_id) };
+        const auto& skinList{ std::vector<Skin>{ champion->skins.list,& champion->skins.list[champion->skins.size] } };
+        for (const auto& skin : skinList)
+        {
+            const auto& skin_id{ skin.skin_id };
+            const auto& skin_display_name{ std::string("game_character_skin_displayname_") + champ_name + "_" + std::to_string(skin_id) };
             auto skin_display_name_translated{ skin_id > 0 ? std::string(cheatManager.memory->translateString(skin_display_name.c_str())) : std::string(champ_name) };
 
             if (skin_display_name_translated == skin_display_name)
@@ -67,7 +69,7 @@ void SkinDatabase::loadChampionsSkins() noexcept
         }
     }
 
-    }
+}
 
 void SkinDatabase::loadHeroHash() noexcept
 {
@@ -97,5 +99,4 @@ void SkinDatabase::loadWardsSkins() noexcept
 
         this->wards_skins.push_back(ward_display_name_translated);
     }
-
 }

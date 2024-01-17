@@ -11,6 +11,12 @@
 using json = nlohmann::json;
 
 class Config {
+private:
+    struct Pos
+    {
+        float x;
+        float y;
+    };
 public:
     Config() noexcept;
     void load() noexcept;
@@ -23,6 +29,10 @@ public:
     float fontScale{ 1.0f };
     bool heroName{ true };
     bool quickSkinChange{ false };
+
+    // window position
+    Pos window_position{ 0.f, 0.f };
+
     // player
     std::int32_t current_combo_skin_index{ 0 };
 

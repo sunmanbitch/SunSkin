@@ -44,23 +44,42 @@ inline void GUI::changeTurretSkin(const std::int32_t skinId, const std::int32_t 
 
 void GUI::render() noexcept
 {
-    std::call_once(set_font_scale, [&] { ImGui::GetIO().FontGlobalScale = CheatManager::getInstance().config->fontScale; });
-
-    ImGui::Begin(LOGO, nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_AlwaysAutoResize);
-    {
-        ImGui::rainbowText();
-        if (ImGui::BeginTabBar("TabBar", ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_FittingPolicyScroll | ImGuiTabBarFlags_NoTooltip)) {
-            this->playerTabItem();
-            this->heroesTabItem();
-            this->globalTabItem();
-            this->extrasTabItem();
-            // if (ImGui::BeginTabItem("Logger")) {
-            //     const auto& cheatManager{ CheatManager::getInstance() };
-            //     cheatManager.logger->draw();
-            //     ImGui::EndTabItem();
-            // }
+    std::call_once(set_font_scale, []
+        {
+            ImGui::GetIO().FontGlobalScale = CheatManager::getInstance().config->fontScale;
+            const auto& [x, y] = CheatManager::getInstance().config->window_position;
+            if (x != 0.f || y != 0.f)
+                ImGui::SetNextWindowPos({ x, y }, ImGuiCond_FirstUseEver);
         }
+    );
+
+    if (!ImGui::Begin(LOGO, nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        ImGui::End();
+        return;
     }
+    ImGui::rainbowText();
+
+    if (!ImGui::BeginTabBar("TabBar", ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_FittingPolicyScroll | ImGuiTabBarFlags_NoTooltip))
+    {
+        ImGui::EndTabBar();
+        return;
+    }
+    this->playerTabItem();
+    this->heroesTabItem();
+    this->globalTabItem();
+    this->extrasTabItem();
+    // if (ImGui::BeginTabItem("Logger")) {
+    //     const auto& cheatManager{ CheatManager::getInstance() };
+    //     cheatManager.logger->draw();
+    //     ImGui::EndTabItem();
+    // }
+    ImGui::EndTabBar();
+
+    const auto& [x, y] { ImGui::GetWindowPos() };
+    auto& window_position{ CheatManager::getInstance().config->window_position };
+    if (window_position.x != x || window_position.y != y) window_position = { x, y };
+
     ImGui::End();
 }
 
@@ -161,7 +180,7 @@ inline void GUI::heroesTabItem() noexcept
             continue;
 
         const auto& heroModelName{ hero->get_character_data_stack()->base_skin.model.str };
-        const auto& heroHashName{ cheatManager.database->heroHash[heroModelName] };
+        const auto& heroHashName{ fnv::hash_runtime(heroModelName) };
         if (heroHashName == FNV("PracticeTool_TargetDummy"))
             continue;
 
@@ -178,7 +197,10 @@ inline void GUI::heroesTabItem() noexcept
         }
 
         auto& config_array{ is_enemy ? cheatManager.config->current_combo_enemy_skin_index : cheatManager.config->current_combo_ally_skin_index };
-        std::snprintf(this->str_buffer, sizeof(this->str_buffer), cheatManager.config->heroName ? "HeroName: [ %s ]##%X" : "PlayerName: [ %s ]##%X", cheatManager.config->heroName ? heroModelName : hero->name.c_str(), reinterpret_cast<std::uintptr_t>(hero));
+        if (cheatManager.config->heroName)
+            std::snprintf(this->str_buffer, sizeof(this->str_buffer), "HeroName: [ %s ]##%X", heroModelName, reinterpret_cast<std::uintptr_t>(hero));
+        else
+            std::snprintf(this->str_buffer, sizeof(this->str_buffer), "PlayerName: [ %s ]##%X", hero->name.c_str(), reinterpret_cast<std::uintptr_t>(hero));
         const auto& values{ cheatManager.database->champions_skins[heroHashName] };
 
         if (auto& skinIndex{ config_array.at(heroHashName) };ImGui::BeginCombo(this->str_buffer, values[skinIndex].skin_name.c_str()))
@@ -259,11 +281,11 @@ inline void GUI::globalTabItem() noexcept
     ImGui::Separator();
 
     ImGui::Text("Jungle Mobs Skins Settings:");
-
-    for (const auto& [name_hash, skins] : cheatManager.database->jungle_mobs_skins) {
-        std::snprintf(str_buffer, 256, "Current %s skin", skins[0]);
+    for (const auto& [name_hash, skins] : cheatManager.database->jungle_mobs_skins)
+    {
+        std::snprintf(this->str_buffer, 256, "Current %s skin", skins[0]);
         const auto& [ele, _] { cheatManager.config->current_combo_jungle_mob_skin_index.insert({ name_hash, 0 }) };
-        if (auto& skinIndex{ ele->second };ImGui::BeginCombo(str_buffer, skins[skinIndex]))
+        if (auto& skinIndex{ ele->second };ImGui::BeginCombo(this->str_buffer, skins[skinIndex]))
         {
             for (auto i{ 0u }; i < skins.size(); ++i)
             {
@@ -279,80 +301,84 @@ inline void GUI::globalTabItem() noexcept
 
     footer();
     ImGui::EndTabItem();
-
 }
 
 inline void GUI::extrasTabItem() noexcept
 {
     const auto& cheatManager{ CheatManager::getInstance() };
     const auto& player{ cheatManager.memory->localPlayer };
-    if (ImGui::BeginTabItem("Extras")) {
-        ImGui::ButtonEnableBind("Menu Key", cheatManager.config->menuKey, "Hovering the mouse over this button allows you to press other keys to rebind it.");
+    if (!ImGui::BeginTabItem("Extras")) return;
 
-        ImGui::Checkbox(cheatManager.config->heroName ? "HeroName based" : "PlayerName based", &cheatManager.config->heroName);
-        ImGui::Checkbox("Rainbow Text", &cheatManager.config->rainbowText);
-        ImGui::Checkbox("Quick Skin Change", &cheatManager.config->quickSkinChange);
-        ImGui::hoverInfo("It allows you to change skin without opening the menu with the key you assign from the keyboard.");
+    ImGui::ButtonEnableBind("Menu Key", cheatManager.config->menuKey, "Hovering the mouse over this button allows you to press other keys to rebind it.");
 
-        if (cheatManager.config->quickSkinChange) {
-            ImGui::Separator();
+    ImGui::Checkbox(cheatManager.config->heroName ? "HeroName based" : "PlayerName based", &cheatManager.config->heroName);
+    ImGui::Checkbox("Rainbow Text", &cheatManager.config->rainbowText);
+    ImGui::Checkbox("Quick Skin Change", &cheatManager.config->quickSkinChange);
+    ImGui::hoverInfo("It allows you to change skin without opening the menu with the key you assign from the keyboard.");
 
-            ImGui::ButtonEnableBind("Previous Skin Key", cheatManager.config->previousSkinKey, "Hovering the mouse over this button allows you to press other keys to rebind it.");
-            ImGui::ButtonEnableBind("Next Skin Key", cheatManager.config->nextSkinKey, "Hovering the mouse over this button allows you to press other keys to rebind it.");
-
-            ImGui::Separator();
-        }
-
-        if (player)
-            ImGui::InputText("Change Nick", &player->name);
-
-        if (ImGui::Button("No skins except local player")) {
-            for (auto& val : cheatManager.config->current_combo_enemy_skin_index | std::views::values)
-                val = 0;
-
-            for (auto& val : cheatManager.config->current_combo_ally_skin_index | std::views::values)
-                val = 0;
-
-            for (const auto& hero : arr2vec(AIHero, cheatManager.memory->heroList)) {
-                if (hero != player)
-                    hero->change_skin(hero->get_character_data_stack()->base_skin.model.str, 0);
-            }
-        } ImGui::hoverInfo("Sets the skins of all champions except the local player to the default skin.");
-
-        if (ImGui::Button("Random Skins")) {
-            for (const auto& hero : arr2vec(AIHero, cheatManager.memory->heroList)) {
-                const auto championHash{ fnv::hash_runtime(hero->get_character_data_stack()->base_skin.model.str) };
-
-                if (championHash == FNV("PracticeTool_TargetDummy"))
-                    continue;
-
-                const auto skinCount{ cheatManager.database->champions_skins[championHash].size() };
-                auto& skinDatabase{ cheatManager.database->champions_skins[championHash] };
-                const auto& my_team{ player ? player->team : 100 };
-                auto& config{ (hero->team != my_team) ? cheatManager.config->current_combo_enemy_skin_index : cheatManager.config->current_combo_ally_skin_index };
-
-                if (hero == player) {
-                    cheatManager.config->current_combo_skin_index = random(1ull, skinCount - 1);
-                    hero->change_skin(skinDatabase[cheatManager.config->current_combo_skin_index].model_name, skinDatabase[cheatManager.config->current_combo_skin_index].skin_id);
-                }
-                else {
-                    auto& data{ config[championHash] };
-                    data = random(1ull, skinCount - 1);
-                    hero->change_skin(skinDatabase[data].model_name, skinDatabase[data].skin_id);
-                }
-            }
-        } ImGui::hoverInfo("Randomly changes the skin of all champions.");
-
-        ImGui::SliderFloat("Font Scale", &cheatManager.config->fontScale, 1.0f, 2.0f, "%.3f");
-        if (ImGui::GetIO().FontGlobalScale != cheatManager.config->fontScale) {
-            ImGui::GetIO().FontGlobalScale = cheatManager.config->fontScale;
-        } ImGui::hoverInfo("Changes the menu font scale.");
-
-        if (ImGui::Button("Force Close"))
-            cheatManager.hooks->uninstall();
-        ImGui::hoverInfo("You will be returned to the reconnect screen.");
-        ImGui::Text("FPS: %.0f FPS", ImGui::GetIO().Framerate);
-        footer();
-        ImGui::EndTabItem();
+    if (cheatManager.config->quickSkinChange)
+    {
+        ImGui::Separator();
+        ImGui::ButtonEnableBind("Previous Skin Key", cheatManager.config->previousSkinKey, "Hovering the mouse over this button allows you to press other keys to rebind it.");
+        ImGui::ButtonEnableBind("Next Skin Key", cheatManager.config->nextSkinKey, "Hovering the mouse over this button allows you to press other keys to rebind it.");
+        ImGui::Separator();
     }
+
+    if (player)
+        ImGui::InputText("Change Nick", &player->name);
+
+    if (ImGui::Button("No skins except local player"))
+    {
+        for (auto& val : cheatManager.config->current_combo_enemy_skin_index | std::views::values)
+            val = 0;
+
+        for (auto& val : cheatManager.config->current_combo_ally_skin_index | std::views::values)
+            val = 0;
+
+        for (const auto& hero : arr2vec(AIHero, cheatManager.memory->heroList))
+        {
+            if (hero == player)
+                continue;
+            hero->change_skin(hero->get_character_data_stack()->base_skin.model.str, 0);
+        }
+    } ImGui::hoverInfo("Sets the skins of all champions except the local player to the default skin.");
+
+    if (ImGui::Button("Random Skins")) {
+        for (const auto& hero : arr2vec(AIHero, cheatManager.memory->heroList))
+        {
+            const auto championHash{ fnv::hash_runtime(hero->get_character_data_stack()->base_skin.model.str) };
+
+            if (championHash == FNV("PracticeTool_TargetDummy"))
+                continue;
+
+            const auto& skinCount{ cheatManager.database->champions_skins[championHash].size() };
+            const auto& skinDatabase{ cheatManager.database->champions_skins[championHash] };
+
+            if (hero == player) {
+                auto& skinIndex{ cheatManager.config->current_combo_skin_index };
+                skinIndex = random(1ull, skinCount - 1);
+                hero->change_skin(skinDatabase[skinIndex].model_name, skinDatabase[skinIndex].skin_id);
+            }
+            else {
+                const auto& my_team{ player ? player->team : 100 };
+                auto& config{ hero->team != my_team ? cheatManager.config->current_combo_enemy_skin_index : cheatManager.config->current_combo_ally_skin_index };
+                auto& data{ config[championHash] };
+                data = random(1ull, skinCount - 1);
+                hero->change_skin(skinDatabase[data].model_name, skinDatabase[data].skin_id);
+            }
+        }
+    } ImGui::hoverInfo("Randomly changes the skin of all champions.");
+
+    ImGui::SliderFloat("Font Scale", &cheatManager.config->fontScale, 1.0f, 2.0f, "%.3f");
+    if (ImGui::GetIO().FontGlobalScale != cheatManager.config->fontScale)
+    {
+        ImGui::GetIO().FontGlobalScale = cheatManager.config->fontScale;
+    } ImGui::hoverInfo("Changes the menu font scale.");
+
+    if (ImGui::Button("Force Close"))
+        cheatManager.hooks->uninstall();
+    ImGui::hoverInfo("You will be returned to the reconnect screen.");
+    ImGui::Text("FPS: %.0f FPS", ImGui::GetIO().Framerate);
+    footer();
+    ImGui::EndTabItem();
 }

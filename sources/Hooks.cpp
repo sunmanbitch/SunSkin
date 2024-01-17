@@ -31,11 +31,13 @@ namespace d3d_vtable {
     struct dxgi_present {
         static long WINAPI hooked(IDXGISwapChain* p_swap_chain, UINT sync_interval, UINT flags) noexcept
         {
-            std::call_once(init_device, [&]() {
-                const auto& cheatManager{ CheatManager::getInstance() };
-                cheatManager.holdon->implDxInit(p_swap_chain);
-                cheatManager.holdon->initHeroSkin();
-                });
+            std::call_once(init_device, [&p_swap_chain]()
+                {
+                    const auto& cheatManager{ CheatManager::getInstance() };
+                    cheatManager.holdon->implDxInit(p_swap_chain);
+                    cheatManager.holdon->initHeroSkin();
+                }
+            );
             CheatManager::getInstance().holdon->render();
             return m_original(p_swap_chain, sync_interval, flags);
         }
@@ -58,11 +60,13 @@ namespace d3d_vtable {
     struct end_scene {
         static long WINAPI hooked(IDirect3DDevice9* p_device) noexcept
         {
-            std::call_once(init_device, [&]() {
-                const auto& cheatManager{ CheatManager::getInstance() };
-                cheatManager.holdon->implDxInit(p_device);
-                cheatManager.holdon->initHeroSkin();
-                });
+            std::call_once(init_device, [&p_device]()
+                {
+                    const auto& cheatManager{ CheatManager::getInstance() };
+                    cheatManager.holdon->implDxInit(p_device);
+                    cheatManager.holdon->initHeroSkin();
+                }
+            );
             CheatManager::getInstance().holdon->render(p_device);
             return m_original(p_device);
         }
