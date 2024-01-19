@@ -44,14 +44,18 @@ inline void GUI::changeTurretSkin(const std::int32_t skinId, const std::int32_t 
 
 void GUI::render() noexcept
 {
-    std::call_once(set_font_scale, []
+    std::call_once(set_font_scale, [&]
         {
-            ImGui::GetIO().FontGlobalScale = CheatManager::getInstance().config->fontScale;
-            const auto& [x, y] = CheatManager::getInstance().config->window_position;
-            if (x != 0.f || y != 0.f)
-                ImGui::SetNextWindowPos({ x, y }, ImGuiCond_FirstUseEver);
+            const auto& config{ CheatManager::getInstance().config };
+            ImGui::GetIO().FontGlobalScale = config->fontScale;
+            const auto& [x, y] = config->window_position;
+            if (x != 0.f || y != 0.f) ImGui::SetNextWindowPos({ x, y }, ImGuiCond_FirstUseEver);
+            this->is_open = config->defaultDisplay;
         }
     );
+
+    if (!this->is_open)
+        return;
 
     if (!ImGui::Begin(LOGO, nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_AlwaysAutoResize))
     {
@@ -313,6 +317,10 @@ inline void GUI::extrasTabItem() noexcept
 
     ImGui::Checkbox(cheatManager.config->heroName ? "HeroName based" : "PlayerName based", &cheatManager.config->heroName);
     ImGui::Checkbox("Rainbow Text", &cheatManager.config->rainbowText);
+    ImGui::Checkbox("Default Display", &cheatManager.config->defaultDisplay);
+    ImGui::hoverInfo("Effective next time.");
+    ImGui::Checkbox("Default No Skin", &cheatManager.config->noSkin);
+    ImGui::hoverInfo("Effective next time.");
     ImGui::Checkbox("Quick Skin Change", &cheatManager.config->quickSkinChange);
     ImGui::hoverInfo("It allows you to change skin without opening the menu with the key you assign from the keyboard.");
 

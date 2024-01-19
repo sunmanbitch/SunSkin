@@ -1,11 +1,9 @@
 #pragma once
 
-#include <unordered_map>
-#include <chrono>
 #include <d3d9.h>
 #include <d3d11.h>
 
-#include "AIMinionClient.hpp"
+#include "GUI.hpp"
 
 class Holdon
 {
@@ -22,6 +20,7 @@ public:
     void initHeroSkin() noexcept;
 
 private:
+    GUI gui;
     ID3D11Device* d3d11_device{ nullptr };
     ID3D11DeviceContext* d3d11_device_context{ nullptr };
     ID3D11RenderTargetView* main_render_target_view{ nullptr };

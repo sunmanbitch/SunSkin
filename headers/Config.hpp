@@ -26,6 +26,8 @@ public:
     KeyBind nextSkinKey{ KeyBind(ImGuiKey_PageUp) };
     KeyBind previousSkinKey{ KeyBind(ImGuiKey_PageDown) };
     bool rainbowText{ false };
+    bool defaultDisplay{ true };
+    bool noSkin{ false };
     float fontScale{ 1.0f };
     bool heroName{ true };
     bool quickSkinChange{ false };

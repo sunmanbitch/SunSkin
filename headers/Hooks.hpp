@@ -1,12 +1,10 @@
 #pragma once
 
-#include <Windows.h>
-#include <mutex>
-
-inline std::once_flag change_skins;
-inline WNDPROC originalWndProc;
+#include "vmt_smart_hook.hpp"
 
 class Hooks {
+private:
+    std::unique_ptr<::vmt_smart_hook> device_vmt{ nullptr };
 public:
     void install() noexcept;
     void uninstall() noexcept;

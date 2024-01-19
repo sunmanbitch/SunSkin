@@ -58,6 +58,8 @@ void Config::load() noexcept
     this->previousSkinKey = KeyBind(config_json.value("previousSkinKey", ImGuiKey_PageDown));
     this->heroName = config_json.value("heroName", true);
     this->rainbowText = config_json.value("raibowText", false);
+    this->defaultDisplay = config_json.value("defaultDisplay", true);
+    this->noSkin = config_json.value("noSkin", false);
     this->quickSkinChange = config_json.value("quickSkinChange", false);
     this->fontScale = config_json.value("fontScale", 1.0f);
     this->current_ward_skin_id = config_json.value("current_ward_skin_id", 0);
@@ -110,6 +112,8 @@ void Config::save() noexcept
     config_json["previousSkinKey"] = this->previousSkinKey.imGuiKeyCode;
     config_json["heroName"] = this->heroName;
     config_json["raibowText"] = this->rainbowText;
+    config_json["defaultDisplay"] = this->defaultDisplay;
+    config_json["noSkin"] = this->noSkin;
     config_json["quickSkinChange"] = this->quickSkinChange;
     config_json["fontScale"] = this->fontScale;
     config_json["current_ward_skin_id"] = this->current_ward_skin_id;
@@ -130,6 +134,6 @@ void Config::save() noexcept
     if (!out.good())
         return;
 
-    out << config_json.dump();
+    out << config_json.dump(4);
     out.close();
 }

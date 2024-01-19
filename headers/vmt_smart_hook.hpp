@@ -6,15 +6,6 @@
 #include <cstdint>
 #include <cstring>
 
-auto is_code_ptr(void* ptr) -> bool {
-    constexpr const DWORD protect_flags{ PAGE_EXECUTE | PAGE_EXECUTE_READ | PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY };
-
-    MEMORY_BASIC_INFORMATION out;
-    ::VirtualQuery(ptr, &out, sizeof(out));
-
-    return out.Type && !(out.Protect & (PAGE_GUARD | PAGE_NOACCESS)) && out.Protect & protect_flags;
-}
-
 class table_hook {
 public:
     constexpr table_hook() : m_new_vmt{ nullptr }, m_old_vmt{ nullptr } {}
@@ -25,6 +16,15 @@ public:
     }
 
 protected:
+    auto is_code_ptr(void* ptr) -> bool {
+        constexpr const DWORD protect_flags{ PAGE_EXECUTE | PAGE_EXECUTE_READ | PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY };
+
+        MEMORY_BASIC_INFORMATION out;
+        ::VirtualQuery(ptr, &out, sizeof(out));
+
+        return out.Type && !(out.Protect & (PAGE_GUARD | PAGE_NOACCESS)) && out.Protect & protect_flags;
+    }
+
     auto initialize(void** original_table) -> void {
         m_old_vmt = original_table;
 

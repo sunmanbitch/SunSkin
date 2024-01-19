@@ -167,7 +167,7 @@ void Holdon::render() noexcept
         ::ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
 
-        if (cheatManager.gui->is_open) { cheatManager.gui->render(); }
+        this->gui.render();
         this->keyEvent();
         this->gameStatus();
 
@@ -185,7 +185,7 @@ void Holdon::render(IDirect3DDevice9* device) noexcept
         ::ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
 
-        if (cheatManager.gui->is_open) { cheatManager.gui->render(); }
+        this->gui.render();
         this->keyEvent();
         this->gameStatus();
 
@@ -208,8 +208,8 @@ void Holdon::keyEvent() noexcept
 
     if (ImGui::IsKeyPressed(cheatManager.config->menuKey.imGuiKeyCode))
     {
-        cheatManager.gui->is_open = !cheatManager.gui->is_open;
-        if (!cheatManager.gui->is_open) cheatManager.config->save();
+        gui.is_open = !gui.is_open;
+        if (!gui.is_open) cheatManager.config->save();
     }
 
     if (cheatManager.config->quickSkinChange && ImGui::IsKeyPressed(cheatManager.config->nextSkinKey.imGuiKeyCode))
@@ -397,8 +397,9 @@ void Holdon::initHeroSkin() noexcept
             continue;
 
         const auto& is_enemy{ my_team != hero->team };
-        const auto& config_array{ is_enemy ? cheatManager.config->current_combo_enemy_skin_index : cheatManager.config->current_combo_ally_skin_index };
-        const auto& hero_skin_index{ config_array.at(champion_name_hash) };
+        auto& config_array{ is_enemy ? cheatManager.config->current_combo_enemy_skin_index : cheatManager.config->current_combo_ally_skin_index };
+        auto& hero_skin_index{ config_array.at(champion_name_hash) };
+        if (cheatManager.config->noSkin) hero_skin_index = 0;
         const auto& values{ cheatManager.database->champions_skins[champion_name_hash] };
         hero->change_skin(values[hero_skin_index].model_name, values[hero_skin_index].skin_id);
     }

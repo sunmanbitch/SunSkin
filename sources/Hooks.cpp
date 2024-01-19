@@ -2,19 +2,14 @@
 
 #include <Windows.h>
 #include <ShlObj.h>
-#include <cinttypes>
-#include <filesystem>
-#include <string>
 
-#include "fnv_hash.hpp"
-#include "imgui_impl_dx9.h"
-#include "imgui_impl_dx11.h"
 #include "imgui_impl_win32.h"
-#include "vmt_smart_hook.hpp"
 
 #include "CheatManager.hpp"
+#include "D3DVTable.hpp"
 #include "Hooks.hpp"
 
+inline WNDPROC originalWndProc;
 LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 static LRESULT WINAPI wndProc(const HWND window, const UINT msg, const WPARAM wParam, const LPARAM lParam) noexcept
@@ -23,69 +18,6 @@ static LRESULT WINAPI wndProc(const HWND window, const UINT msg, const WPARAM wP
         return true;
     return ::CallWindowProc(originalWndProc, window, msg, wParam, lParam);
 }
-
-std::once_flag init_device;
-std::unique_ptr<::vmt_smart_hook> device_vmt{ nullptr };
-
-namespace d3d_vtable {
-    struct dxgi_present {
-        static long WINAPI hooked(IDXGISwapChain* p_swap_chain, UINT sync_interval, UINT flags) noexcept
-        {
-            std::call_once(init_device, [&p_swap_chain]()
-                {
-                    const auto& cheatManager{ CheatManager::getInstance() };
-                    cheatManager.holdon->implDxInit(p_swap_chain);
-                    cheatManager.holdon->initHeroSkin();
-                }
-            );
-            CheatManager::getInstance().holdon->render();
-            return m_original(p_swap_chain, sync_interval, flags);
-        }
-        static decltype(&hooked) m_original;
-    };
-    decltype(dxgi_present::m_original) dxgi_present::m_original;
-
-    struct dxgi_resize_buffers {
-        static long WINAPI hooked(IDXGISwapChain* p_swap_chain, UINT buffer_count, UINT width, UINT height, DXGI_FORMAT new_format, UINT swap_chain_flags) noexcept
-        {
-            CheatManager::getInstance().holdon->release_render_target();
-            const auto hr{ m_original(p_swap_chain, buffer_count, width, height, new_format, swap_chain_flags) };
-            CheatManager::getInstance().holdon->create_render_target();
-            return hr;
-        }
-        static decltype(&hooked) m_original;
-    };
-    decltype(dxgi_resize_buffers::m_original) dxgi_resize_buffers::m_original;
-
-    struct end_scene {
-        static long WINAPI hooked(IDirect3DDevice9* p_device) noexcept
-        {
-            std::call_once(init_device, [&p_device]()
-                {
-                    const auto& cheatManager{ CheatManager::getInstance() };
-                    cheatManager.holdon->implDxInit(p_device);
-                    cheatManager.holdon->initHeroSkin();
-                }
-            );
-            CheatManager::getInstance().holdon->render(p_device);
-            return m_original(p_device);
-        }
-        static decltype(&hooked) m_original;
-    };
-    decltype(end_scene::m_original) end_scene::m_original;
-
-    struct reset {
-        static long WINAPI hooked(IDirect3DDevice9* device, D3DPRESENT_PARAMETERS* parametrs) noexcept
-        {
-            ::ImGui_ImplDX9_InvalidateDeviceObjects();
-            const auto hr{ m_original(device, parametrs) };
-            if (hr >= 0) { ::ImGui_ImplDX9_CreateDeviceObjects(); }
-            return hr;
-        }
-        static decltype(&hooked) m_original;
-    };
-    decltype(reset::m_original) reset::m_original;
-};
 
 void Hooks::install() noexcept
 {

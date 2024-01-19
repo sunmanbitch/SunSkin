@@ -1,6 +1,5 @@
 #pragma once
 
-#include <mutex>
 #include <random>
 
 class RandomGenerator {
@@ -29,8 +28,7 @@ private:
     inline static std::mutex mutex;
 };
 
-template <typename T>
-[[nodiscard]] T random(T min, T max) noexcept
+[[nodiscard]] auto random(auto min, auto max) noexcept
 {
     return RandomGenerator::random(min, max);
 }

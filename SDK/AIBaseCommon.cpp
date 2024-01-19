@@ -13,10 +13,10 @@ bool AIBaseCommon::checkSpecialSkins(const std::int32_t& skin) noexcept
 
     auto result{ false };
 
-    if (const auto& it{ heroHash.find(dataStack->base_skin.model.str) }; it == heroHash.end())
+    const auto& champ_name{ fnv::hash_runtime(dataStack->base_skin.model.str) };
+    if (const auto& it{ heroHash.find(dataStack->base_skin.model.str) }; it == heroHash.end() && champ_name != FNV("TestCubeRender10Vision"))
         return result;
 
-    const auto& champ_name{ heroHash.at(dataStack->base_skin.model.str) };
     const std::int8_t& zero{ 0 };
     const std::int8_t& nonzero{ -1 };
 
