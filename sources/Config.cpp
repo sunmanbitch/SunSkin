@@ -43,12 +43,15 @@ void Config::load() noexcept
     {
         const auto& player_name{ player->get_character_data_stack()->base_skin.model.str };
         const auto& player_name_hash{ cheatManager.database->heroHash.at(player_name) };
-        const auto& current_combo_skin_index_key = std::to_string(player_name_hash) + ".current_combo_skin_index";
+        const auto& skin_index_obj{ this->config_json.find("current_combo_skin_index") };
         const auto& skins{ cheatManager.database->champions_skins.at(player_name_hash) };
 
         const auto& skinID{ player->get_character_data_stack()->base_skin.skin };
         const auto& it{ std::ranges::find_if(skins, [&skinID](const auto& skin) { return skin.skin_id == skinID; }) };
-        this->current_combo_skin_index = config_json.value(current_combo_skin_index_key, it != skins.end() ? std::distance(skins.begin(), it) : 0);
+        if (skin_index_obj == this->config_json.end())
+            this->current_combo_skin_index = std::distance(skins.begin(), it);
+        else
+            this->current_combo_skin_index = skin_index_obj->value(std::to_string(player_name_hash), std::distance(skins.begin(), it));
     }
 
     this->window_position = { config_json.value("window_position_x", 0.f), config_json.value("window_position_y", 0.f) };
@@ -63,6 +66,7 @@ void Config::load() noexcept
     this->quickSkinChange = config_json.value("quickSkinChange", false);
     this->fontScale = config_json.value("fontScale", 1.0f);
     this->current_ward_skin_id = config_json.value("current_ward_skin_id", 0);
+    this->current_combo_minion_index = config_json.value("current_combo_minion_index", 0);
 
     const auto& ally_skins_object{ this->config_json.find("current_combo_ally_skin_index") };
     const auto& enemy_skins_object{ this->config_json.find("current_combo_enemy_skin_index") };
@@ -84,15 +88,15 @@ void Config::load() noexcept
 
         if (heroSkinIndex != 0 || skins_object == this->config_json.end())
             current_combo_skin_index[heroHash] = heroSkinIndex;
-        else if (const auto& it{ skins_object.value().find(std::to_string(heroHash)) }; it == skins_object.value().end())
+        else if (const auto& it{ skins_object->find(std::to_string(heroHash)) }; it == skins_object->end())
             current_combo_skin_index[heroHash] = heroSkinIndex;
         else
-            current_combo_skin_index[heroHash] = it.value().get<std::int32_t>();
+            current_combo_skin_index[heroHash] = it->get<std::int32_t>();
     }
 
     const auto jungle_mobs_skins{ config_json.find("current_combo_jungle_mob_skin_index") };
     if (jungle_mobs_skins != config_json.end())
-        for (const auto& it : jungle_mobs_skins.value().items())
+        for (const auto& it : jungle_mobs_skins->items())
             this->current_combo_jungle_mob_skin_index[std::stoull(it.key())] = it.value().get<std::int32_t>();
 
 }
@@ -100,10 +104,13 @@ void Config::load() noexcept
 void Config::save() noexcept
 {
     const auto& cheatManager{ CheatManager::getInstance() };
-    const auto player{ cheatManager.memory->localPlayer };
+    const auto& player{ cheatManager.memory->localPlayer };
 
     if (player)
-        config_json[std::to_string(cheatManager.database->heroHash[player->get_character_data_stack()->base_skin.model.str]) + ".current_combo_skin_index"] = this->current_combo_skin_index;
+    {
+        const auto& model_name{ player->get_character_data_stack()->base_skin.model.str };
+        config_json["current_combo_skin_index"][std::to_string(cheatManager.database->heroHash[model_name])] = this->current_combo_skin_index;
+    }
 
     config_json["window_position_x"] = this->window_position.x;
     config_json["window_position_y"] = this->window_position.y;
@@ -117,6 +124,7 @@ void Config::save() noexcept
     config_json["quickSkinChange"] = this->quickSkinChange;
     config_json["fontScale"] = this->fontScale;
     config_json["current_ward_skin_id"] = this->current_ward_skin_id;
+    config_json["current_combo_minion_index"] = this->current_combo_minion_index;
 
     for (const auto& [fst, snd] : this->current_combo_ally_skin_index)
         config_json["current_combo_ally_skin_index"][std::to_string(fst)] = snd;

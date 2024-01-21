@@ -58,6 +58,7 @@ public:
     IDXGISwapChain* swapChain;
 
 private:
+    using bytes_t = std::vector<std::int32_t>;
     using translateString_t = const char* (__fastcall*)(const char*);
     using characterDataStackUpdate_t = const void(__fastcall*)(const CharacterDataStack*, bool);
     using characterDataStackPush_t = std::uintptr_t(__fastcall*)(const CharacterDataStack*, const char*, std::int32_t, std::int32_t, bool, bool, bool, bool, bool, bool, std::int8_t, const char*, std::int32_t, const char*, std::int32_t, bool, std::int32_t);
@@ -68,12 +69,13 @@ private:
 public:
     translateString_t translateString;
     characterDataStackUpdate_t characterDataStackUpdate;
-    // push(self, model, skin, 0, false, false, false, false, true, false, -1, "\x00", 0, "\x00", 0, false, 1);
     characterDataStackPush_t characterDataStackPush;
     getGoldRedirectTarget_t getGoldRedirectTarget;
     WorldToScreen_t WorldToScreen;
 private:
     void update(bool gameClient = true) noexcept;
+    bytes_t pattern_to_byte(const char* pattern) noexcept;
+    std::uint8_t* find_signature(const wchar_t* szModule, const char* szSignature) noexcept;
 
     const std::vector<offset_signature> gameClientSig
     {

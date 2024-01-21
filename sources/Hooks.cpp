@@ -1,7 +1,6 @@
 #pragma warning(disable : 6011)
 
 #include <Windows.h>
-#include <ShlObj.h>
 
 #include "imgui_impl_win32.h"
 
@@ -22,19 +21,25 @@ static LRESULT WINAPI wndProc(const HWND window, const UINT msg, const WPARAM wP
 void Hooks::install() noexcept
 {
     const auto& cheatManager{ CheatManager::getInstance() };
-    if (cheatManager.memory->swapChain) {
+    if (cheatManager.memory->swapChain)
+    {
         device_vmt = std::make_unique<::vmt_smart_hook>(cheatManager.memory->swapChain);
         device_vmt->apply_hook<d3d_vtable::dxgi_present>(8);
         device_vmt->apply_hook<d3d_vtable::dxgi_resize_buffers>(13);
         device_vmt->rehook();
         cheatManager.logger->addLog("DX11 Hooked!\n");
     }
-    else if (cheatManager.memory->d3dDevice) {
+    else if (cheatManager.memory->d3dDevice)
+    {
         device_vmt = std::make_unique<::vmt_smart_hook>(cheatManager.memory->d3dDevice);
         device_vmt->apply_hook<d3d_vtable::end_scene>(42);
         device_vmt->apply_hook<d3d_vtable::reset>(16);
         device_vmt->rehook();
         cheatManager.logger->addLog("DX9 Hooked!\n");
+    }
+    else
+    {
+        ::MessageBoxA(nullptr, "Hook Fail!!", "SunSkin", MB_OK | MB_ICONWARNING);
     }
     originalWndProc = WNDPROC(::SetWindowLongPtr(cheatManager.memory->window, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(&wndProc)));
     cheatManager.logger->addLog("WndProc hooked!\n\tOriginal: 0x%X\n\tNew: 0x%X\n", &originalWndProc, &wndProc);

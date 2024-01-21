@@ -54,9 +54,6 @@ void GUI::render() noexcept
         }
     );
 
-    if (!this->is_open)
-        return;
-
     if (!ImGui::Begin(LOGO, nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_AlwaysAutoResize))
     {
         ImGui::End();

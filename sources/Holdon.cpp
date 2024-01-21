@@ -167,7 +167,7 @@ void Holdon::render() noexcept
         ::ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
 
-        this->gui.render();
+        if (this->gui.is_open) this->gui.render();
         this->keyEvent();
         this->gameStatus();
 
@@ -185,7 +185,7 @@ void Holdon::render(IDirect3DDevice9* device) noexcept
         ::ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
 
-        this->gui.render();
+        if (this->gui.is_open) this->gui.render();
         this->keyEvent();
         this->gameStatus();
 

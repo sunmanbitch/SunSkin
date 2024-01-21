@@ -2,40 +2,35 @@
 
 #include <Windows.h>
 #include <chrono>
-#include <cstdint>
-#include <string>
 #include <thread>
-#include <vector>
 
 #include "Memory.hpp"
 
-[[nodiscard]] static std::uint8_t* find_signature(const wchar_t* szModule, const char* szSignature) noexcept
+Memory::bytes_t Memory::pattern_to_byte(const char* pattern) noexcept
+{
+    bytes_t bytes{};
+    bytes.reserve(strlen(pattern) / 2u);
+    const auto start{ const_cast<char*>(pattern) };
+    const auto end{ const_cast<char*>(pattern) + strlen(pattern) };
+
+    for (auto current{ start }; current < end; ++current) {
+        if (*current == '?')
+        {
+            ++current;
+            if (*current == '?') ++current;
+            bytes.push_back(-1);
+        }
+        else
+        {
+            bytes.push_back(strtoul(current, &current, 16));
+        }
+    }
+    return bytes;
+};
+
+std::uint8_t* Memory::find_signature(const wchar_t* szModule, const char* szSignature) noexcept
 {
     const auto module{ ::GetModuleHandleW(szModule) };
-
-    using bytes_t = std::vector<std::int32_t>;
-
-    static const auto pattern_to_byte = [](const char* pattern) noexcept -> bytes_t
-        {
-            bytes_t bytes{};
-            bytes.reserve(strlen(pattern) / 2u);
-            const auto start{ const_cast<char*>(pattern) };
-            const auto end{ const_cast<char*>(pattern) + strlen(pattern) };
-
-            for (auto current{ start }; current < end; ++current) {
-                if (*current == '?') {
-                    ++current;
-                    if (*current == '?')
-                        ++current;
-                    bytes.push_back(-1);
-                }
-                else {
-                    bytes.push_back(strtoul(current, &current, 16));
-                }
-            }
-
-            return bytes;
-        };
 
     const auto dosHeader{ reinterpret_cast<PIMAGE_DOS_HEADER>(module) };
     const auto ntHeaders{ reinterpret_cast<PIMAGE_NT_HEADERS>(reinterpret_cast<std::uint8_t*>(module) + dosHeader->e_lfanew) };
@@ -110,8 +105,6 @@ void Memory::update(bool gameClient) noexcept
 
 void Memory::Search(bool gameClient)
 {
-    using namespace std::chrono_literals;
-
     try {
         const auto& signatureToSearch{ (gameClient ? this->gameClientSig : this->sigs) };
 
@@ -153,6 +146,7 @@ void Memory::Search(bool gameClient)
             if (!missing_offset)
                 break;
 
+            using namespace std::chrono_literals;
             std::this_thread::sleep_for(2s);
         }
         this->update(gameClient);
