@@ -130,6 +130,16 @@ public:
         FNV("SRU_RiftHerald"),
         FNV("SRU_Jungle_Companions"),
         FNV("PreSeason_Turret_Shield"),
+        FNV("Sru_CrabWard"),
+        FNV("SRU_Horde"),
+        FNV("SRU_Horde_Mini"),
+        FNV("HA_OrderMinionRanged"), FNV("HA_OrderMinionMelee"), FNV("HA_OrderMinionSiege"), FNV("HA_OrderMinionSuper"),
+        FNV("HA_ChaosMinionRanged"), FNV("HA_ChaosMinionMelee"), FNV("HA_ChaosMinionSiege"), FNV("HA_ChaosMinionSuper"),
+        FNV("HA_Hexgate"),
+        FNV("HA_Hexgate_Exit"),
+        FNV("HA_AP_Poro"),
+        FNV("HA_AP_HealthRelic"),
+        FNV("TestCubeRender"),
         FNV("DominationScout")
     };
 

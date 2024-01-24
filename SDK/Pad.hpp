@@ -28,4 +28,4 @@ struct                            \
 }
 
 #define arr2vec(obj, ptr) \
-std::vector<obj*>{ ptr->list, &ptr->list[ptr->length] }
+std::span<obj*>{ ptr->list, static_cast<std::size_t>(ptr->length) }

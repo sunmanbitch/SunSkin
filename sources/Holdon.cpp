@@ -259,38 +259,38 @@ void Holdon::keyEvent() noexcept
 
     if (ImGui::IsKeyPressed(ImGuiKey_F7))
     {
-        // The codes you write here are executed when you press the F7 key in the game.
-        // const auto minions{ cheatManager.memory->minionList };
-        // for (auto i{ 0u }; i < minions->length; ++i) {
-        //     const auto& minion{ minions->list[i] };
+        ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
+        ImGui::SetNextWindowPos({ 0, 0 }, ImGuiCond_FirstUseEver);
+        ImGui::Begin("##Overlay", nullptr,
+            ImGuiWindowFlags_NoTitleBar |
+            ImGuiWindowFlags_NoResize |
+            ImGuiWindowFlags_NoMove |
+            ImGuiWindowFlags_NoScrollbar |
+            ImGuiWindowFlags_NoSavedSettings |
+            ImGuiWindowFlags_NoInputs |
+            ImGuiWindowFlags_NoBackground |
+            ImGuiWindowFlags_NoCollapse |
+            ImGuiTabBarFlags_Reorderable |
+            ImGuiTabBarFlags_FittingPolicyScroll |
+            ImGuiTabBarFlags_NoTooltip
+        );
 
-        //     if ((!minion->isMinion()) && (!minion->isJungle()))
-        //     {
-        //         const auto& owner{ minion->redirectTarget() };
-        //         if (owner) {}
-        //         else
-        //             cheatManager.logger->addLog("Minion: %s\tModelName: %s\n", minion->get_name()->c_str(), minion->get_character_data_stack()->base_skin.model.str);
-        //         // continue;
-        //         // if (owner)
-        //         //     cheatManager.logger->addLog("\tOwnerName: %s\tModelName: %s\n", owner->get_name()->c_str(), owner->get_character_data_stack()->base_skin.model.str);
-        //     }
-        // }
+        for (const auto& minion : arr2vec(AIMinionClient, cheatManager.memory->minionList))
+        {
+            const auto& position3D{ minion->get_position() };
+            Position position2D;
+            cheatManager.memory->viewProjMatrix->get_renderer()->wroldToScreen(position3D, &position2D);
+            const auto& [dsplx, dsply] { ImGui::GetIO().DisplaySize };
+            const auto& xCheck{ 0 <= position2D.x && position2D.x <= dsplx };
+            const auto& yCheck{ 0 <= position2D.y && position2D.y <= dsply };
+            const auto inScreen{ xCheck && yCheck };
 
-        // const auto& turrets{ cheatManager.memory->turretList };
-        // for (auto i{ 0u }; i < turrets->length; ++i) {
-        //     const auto& turret{ turrets->list[i] };
-        //     cheatManager.logger->addLog("Turret: %s\tModelName: %s\n", turret->get_name()->c_str(), turret->get_character_data_stack()->base_skin.model.str);
-        // }
+            if (!inScreen)
+                continue;
+            ImGui::GetWindowDrawList()->AddText({ position2D.x, position2D.y }, ImColor(255, 255, 0), minion->get_character_data_stack()->base_skin.model.str);
+        }
 
-        // const auto& position{ cheatManager.memory->localPlayer->get_position() };
-        // cheatManager.logger->addLog("[1] x: %f, y: %f, z: %f\n", position->x, position->y, position->z);
-
-        // const auto& positionV3{ cheatManager.memory->localPlayer->get_position() };
-        // Position position;
-        // cheatManager.memory->viewProjMatrix->get_renderer()->wroldToScreen(positionV3, &position);
-        // cheatManager.logger->addLog("[2] x: %f, y: %f\n", position.x, position.y);
-        // auto displaySize{ ImGui::GetIO().DisplaySize };
-        // cheatManager.logger->addLog("[3] x: %f, y: %f\n", displaySize.x, displaySize.y);
+        ImGui::End();
     }
 
 }

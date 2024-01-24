@@ -1,7 +1,6 @@
 #include <algorithm>
 #include <cstdio>
 #include <string>
-#include <vector>
 #include <ranges>
 
 #include "GUI.hpp"
