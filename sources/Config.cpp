@@ -94,10 +94,14 @@ void Config::load() noexcept
             current_combo_skin_index[heroHash] = it->get<std::int32_t>();
     }
 
-    const auto jungle_mobs_skins{ config_json.find("current_combo_jungle_mob_skin_index") };
-    if (jungle_mobs_skins != config_json.end())
-        for (const auto& it : jungle_mobs_skins->items())
-            this->current_combo_jungle_mob_skin_index[std::stoull(it.key())] = it.value().get<std::int32_t>();
+    const auto& jungle_mobs_skins{ config_json.find("current_combo_jungle_mob_skin_index") };
+    for (const auto& [name_hash, _] : cheatManager.database->jungle_mobs_skins)
+    {
+        if (jungle_mobs_skins != config_json.end() && jungle_mobs_skins->find(std::to_string(name_hash)) != jungle_mobs_skins->end())
+            this->current_combo_jungle_mob_skin_index[name_hash] = config_json["current_combo_jungle_mob_skin_index"][std::to_string(name_hash)];
+        else
+            this->current_combo_jungle_mob_skin_index[name_hash] = 0;
+    }
 
 }
 

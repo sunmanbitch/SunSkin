@@ -343,7 +343,7 @@ inline void GUI::extrasTabItem() noexcept
         {
             if (hero == player)
                 continue;
-            hero->change_skin(hero->get_character_data_stack()->base_skin.model.str, 0);
+            hero->change_skin(0, true);
         }
     } ImGui::hoverInfo("Sets the skins of all champions except the local player to the default skin.");
 

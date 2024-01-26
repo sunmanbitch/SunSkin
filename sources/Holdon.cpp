@@ -335,16 +335,15 @@ void Holdon::gameStatus() noexcept
             const auto& skin_index{ cheatManager.config->current_combo_minion_index * 2 };
             const auto& player{ cheatManager.memory->localPlayer };
             const auto minion_offset{ (player && player->team == 200) ? 1 : 0 };
-            minion->change_skin(minion->get_character_data_stack()->base_skin.model.str, skin_index + minion_offset, false);
+            minion->change_skin(skin_index + minion_offset);
             continue;
         }
 
         if (minion->isJungle())
         {
             const auto& wildName{ cheatManager.database->wild.find(minion->getModelHash())->second };
-            const auto& [origin, isAdd] { cheatManager.config->current_combo_jungle_mob_skin_index.insert({ wildName, 0 }) };
-            if (!isAdd)
-                minion->change_skin(minion->get_character_data_stack()->base_skin.model.str, cheatManager.config->current_combo_jungle_mob_skin_index[wildName], false);
+            if (const auto& jungles_index{ cheatManager.config->current_combo_jungle_mob_skin_index }; jungles_index.find(wildName) != jungles_index.end() && jungles_index.at(wildName) != 0)
+                minion->change_skin(jungles_index.at(wildName));
             continue;
         }
 
@@ -353,7 +352,7 @@ void Holdon::gameStatus() noexcept
             {
                 const auto& player{ cheatManager.memory->localPlayer };
                 if (const auto& ward_skin{ cheatManager.config->current_ward_skin_id };player && owner == player && ward_skin != 0)
-                    minion->change_skin(minion->get_character_data_stack()->base_skin.model.str, ward_skin, false);
+                    minion->change_skin(ward_skin);
             }
             else if (minion->isTestCube())
             {
@@ -364,7 +363,7 @@ void Holdon::gameStatus() noexcept
             }
             else
             {
-                minion->change_skin(minion->get_character_data_stack()->base_skin.model.str, owner->get_character_data_stack()->base_skin.skin, false);
+                minion->change_skin(owner->get_character_data_stack()->base_skin.skin);
             }
             continue;
         }

@@ -56,3 +56,24 @@ void AIBaseCommon::change_skin(const char* model, const std::int32_t skin, const
         dataStack->update();
     }
 }
+
+void AIBaseCommon::change_skin(const std::int32_t skin, const bool isEncrypt) noexcept
+{
+    if (skin < 0) return;
+
+    const auto& dataStack{ this->get_character_data_stack() };
+
+    if (this->checkSpecialSkins(skin))
+    {
+        if (isEncrypt) this->get_cryption()->encrypt(skin);
+        dataStack->base_skin.skin = skin;
+        if (!dataStack->stack.empty()) dataStack->stack.clear();
+        dataStack->push(dataStack->base_skin.model.str, skin);
+    }
+    else if (dataStack->base_skin.skin != skin)
+    {
+        if (isEncrypt) this->get_cryption()->encrypt(skin);
+        dataStack->base_skin.skin = skin;
+        dataStack->update();
+    }
+}

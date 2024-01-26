@@ -15,6 +15,7 @@ public:
     CLASS_GETTER_P(Position, get_position, offsets::AIBaseCommon::Position);
 
     void change_skin(const char* model, const std::int32_t skin, const bool isEncrypt = true) noexcept;
+    void change_skin(const std::int32_t skin, const bool isEncrypt = false) noexcept;
 private:
     bool checkSpecialSkins(const std::int32_t& skin) noexcept;
 };
