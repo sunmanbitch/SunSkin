@@ -11,7 +11,7 @@ private:
 public:
     AString champion_name;
 private:
-    PAD(0xD0);
+    PAD(0xA0);
 public:
     RiotArray<Skin> skins;
 };

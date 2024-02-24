@@ -133,14 +133,17 @@ public:
         FNV("Sru_CrabWard"),
         FNV("SRU_Horde"),
         FNV("SRU_Horde_Mini"),
+        FNV("TestCubeRender"),
+        FNV("DominationScout")
+    };
+
+    const std::unordered_set<std::uint64_t> ha_minion{
         FNV("HA_OrderMinionRanged"), FNV("HA_OrderMinionMelee"), FNV("HA_OrderMinionSiege"), FNV("HA_OrderMinionSuper"),
         FNV("HA_ChaosMinionRanged"), FNV("HA_ChaosMinionMelee"), FNV("HA_ChaosMinionSiege"), FNV("HA_ChaosMinionSuper"),
         FNV("HA_Hexgate"),
         FNV("HA_Hexgate_Exit"),
         FNV("HA_AP_Poro"),
-        FNV("HA_AP_HealthRelic"),
-        FNV("TestCubeRender"),
-        FNV("DominationScout")
+        FNV("HA_AP_HealthRelic")
     };
 
     std::unordered_map<std::string, std::uint64_t> heroHash;

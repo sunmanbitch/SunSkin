@@ -69,11 +69,11 @@ void GUI::render() noexcept
     this->heroesTabItem();
     this->globalTabItem();
     this->extrasTabItem();
-    // if (ImGui::BeginTabItem("Logger")) {
-    //     const auto& cheatManager{ CheatManager::getInstance() };
-    //     cheatManager.logger->draw();
-    //     ImGui::EndTabItem();
-    // }
+    if constexpr (false && ImGui::BeginTabItem("Logger")) {
+        const auto& cheatManager{ CheatManager::getInstance() };
+        cheatManager.logger->draw();
+        ImGui::EndTabItem();
+    }
     ImGui::EndTabBar();
 
     const auto& [x, y] { ImGui::GetWindowPos() };
@@ -226,6 +226,13 @@ inline void GUI::heroesTabItem() noexcept
 inline void GUI::globalTabItem() noexcept
 {
     const auto& cheatManager{ CheatManager::getInstance() };
+    const auto& ha_minion{ cheatManager.database->ha_minion };
+
+    for (const auto& minion : arr2vec(AIMinionClient, cheatManager.memory->minionList))
+    {
+        if (ha_minion.find(minion->getModelHash()) != ha_minion.end())
+            return;
+    }
 
     if (!ImGui::BeginTabItem("Global Skins"))
         return;

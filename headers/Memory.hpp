@@ -124,7 +124,7 @@ private:
             Approach::only_read_x, 0, &offsets::AIBaseCommon::CharacterDataStack
         },
         {
-            "40 38 BB ? ? 00 00 0F 85 ? ? 00 00 66 C7 83 ? ? ? ? ? ? 0F 31 48 C1 E2 20 4C 8D 83 ? ? 00 00 48 0B C2 44 8B CF 48 89 44 24 ? 8B D7 66 66 66",
+            "40 38 BB ? ? 00 00 0F 85 ? ? 00 00 66 C7 83 ? ? ? ? ? ? 0F 31 48 C1 E2 20 4C 8D 83 ? ? 00 00 48 0B C2 44 8B CF 48 89 44 24 38 8B D7",
             Approach::only_read_x, 0, &offsets::AIBaseCommon::SkinId
         },
         {

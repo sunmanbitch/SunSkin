@@ -257,7 +257,7 @@ void Holdon::keyEvent() noexcept
         }
     }
 
-    if (ImGui::IsKeyPressed(ImGuiKey_F7))
+    if constexpr (false)
     {
         ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
         ImGui::SetNextWindowPos({ 0, 0 }, ImGuiCond_FirstUseEver);

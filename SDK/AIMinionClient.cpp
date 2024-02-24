@@ -80,5 +80,8 @@ bool AIMinionClient::isOther() noexcept
     const auto& other{ cheatManager.database->other };
     if (other.find(modelHash) != other.end()) return true;
 
+    const auto& ha_minion{ cheatManager.database->ha_minion };
+    if (ha_minion.find(modelHash) != ha_minion.end()) return true;
+
     return false;
 }

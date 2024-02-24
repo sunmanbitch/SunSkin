@@ -28,8 +28,8 @@ void SkinDatabase::loadChampionsSkins() noexcept
 
         const auto champ_name_hash{ this->heroHash[champ_name] };
         std::map<std::string, std::int32_t> temp_skin_list;
-        
-        const auto& skinList{ std::vector<Skin>{ champion->skins.list,& champion->skins.list[champion->skins.size] } };
+
+        const auto& skinList{ std::span<Skin>{ champion->skins.list, static_cast<std::size_t>(champion->skins.size) } };
         std::vector<std::int32_t> skin_id_list; skin_id_list.reserve(skinList.size() + 1);
         std::ranges::transform(skinList, std::back_inserter(skin_id_list), [](const auto& skin) { return skin.skin_id; });
         std::ranges::sort(skin_id_list);
