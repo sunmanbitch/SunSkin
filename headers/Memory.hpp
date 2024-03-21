@@ -120,7 +120,7 @@ private:
             Approach::only_read_x, 0, &offsets::ViewProjMatrix::Renderer
         },
         {
-            "48 8D 8B ? ? ? ? 48 89 44 24 ? C7 44 24",
+            "48 8D 8D ? ? 00 00 44 8B 8C 24 ? ? 00 00",
             Approach::only_read_x, 0, &offsets::AIBaseCommon::CharacterDataStack
         },
         {

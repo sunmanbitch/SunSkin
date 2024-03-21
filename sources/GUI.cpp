@@ -69,10 +69,13 @@ void GUI::render() noexcept
     this->heroesTabItem();
     this->globalTabItem();
     this->extrasTabItem();
-    if constexpr (false && ImGui::BeginTabItem("Logger")) {
-        const auto& cheatManager{ CheatManager::getInstance() };
-        cheatManager.logger->draw();
-        ImGui::EndTabItem();
+    if constexpr (false) {
+        if (ImGui::BeginTabItem("Logger"))
+        {
+            const auto& cheatManager{ CheatManager::getInstance() };
+            cheatManager.logger->draw();
+            ImGui::EndTabItem();
+        }
     }
     ImGui::EndTabBar();
 
