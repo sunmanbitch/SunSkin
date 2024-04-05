@@ -26,7 +26,6 @@ file(GLOB ALL_FILES
   "SDK/*.cpp"
   ${imgui_SOURCE_DIR}/*.cpp
   ${imgui_SOURCE_DIR}/backends/*win32.cpp
-  ${imgui_SOURCE_DIR}/backends/*dx9.cpp
   ${imgui_SOURCE_DIR}/backends/*dx11.cpp
 )
 

@@ -29,14 +29,6 @@ void Hooks::install() noexcept
         device_vmt->rehook();
         cheatManager.logger->addLog("DX11 Hooked!\n");
     }
-    else if (cheatManager.memory->d3dDevice)
-    {
-        device_vmt = std::make_unique<::vmt_smart_hook>(cheatManager.memory->d3dDevice);
-        device_vmt->apply_hook<d3d_vtable::end_scene>(42);
-        device_vmt->apply_hook<d3d_vtable::reset>(16);
-        device_vmt->rehook();
-        cheatManager.logger->addLog("DX9 Hooked!\n");
-    }
     else
     {
         ::MessageBoxA(nullptr, "Hook Fail!!", "SunSkin", MB_OK | MB_ICONWARNING);

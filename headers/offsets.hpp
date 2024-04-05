@@ -31,7 +31,6 @@ namespace offsets {
     };
 
     namespace MaterialRegistry {
-        inline std::uintptr_t D3DDevice{ 0 };
         inline std::uintptr_t SwapChain{ 0 };
     };
 

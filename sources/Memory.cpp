@@ -92,7 +92,6 @@ void Memory::update(bool gameClient) noexcept
         this->championManager = *reinterpret_cast<ChampionManager**>(offsets::global::ChampionManager);
         this->viewProjMatrix = *reinterpret_cast<ViewProjMatrix**>(offsets::global::ViewProjMatrix);
         this->materialRegistry = reinterpret_cast<materialRegistry_t>(offsets::functions::Riot__Renderer__MaterialRegistry__GetSingletonPtr)();
-        this->d3dDevice = *reinterpret_cast<IDirect3DDevice9**>(this->materialRegistry + offsets::MaterialRegistry::D3DDevice);
         this->swapChain = *reinterpret_cast<IDXGISwapChain**>(this->materialRegistry + offsets::MaterialRegistry::SwapChain);
         this->window = *reinterpret_cast<HWND*>(offsets::global::Riot__g_window);
         this->translateString = reinterpret_cast<translateString_t>(offsets::functions::translateString_UNSAFE_DONOTUSE);

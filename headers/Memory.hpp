@@ -2,7 +2,6 @@
 
 #include <Windows.h>
 #include <cstdint>
-#include <d3d9.h>
 #include <d3d11.h>
 
 #include "Offsets.hpp"
@@ -54,7 +53,6 @@ public:
     ViewProjMatrix* viewProjMatrix;
 
     std::uintptr_t materialRegistry;
-    IDirect3DDevice9* d3dDevice;
     IDXGISwapChain* swapChain;
 
 private:
@@ -130,10 +128,6 @@ private:
         {
             "48 8D 8D ? ? ? ? E8 ? ? ? ? 48 8B 54 24 78",
             Approach::only_read_x, 0, &offsets::AIBaseCommon::Position
-        },
-        {
-            "48 8B 8F ? ? 00 00 45 33 C0 8B D3 48 8B 01 FF 90 ? ? 00 00",
-            Approach::only_read_x, 0, &offsets::MaterialRegistry::D3DDevice
         },
         {
             "48 8D BB ? ? ? ? C6 83 ? ? ? ? ? 0F 84",

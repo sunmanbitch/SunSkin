@@ -1,6 +1,5 @@
 #pragma once
 
-#include <d3d9.h>
 #include <d3d11.h>
 
 #include "GUI.hpp"
@@ -12,9 +11,7 @@ public:
     void release_render_target() noexcept;
     void init_imgui() noexcept;
     void implDxInit(IDXGISwapChain*) noexcept;
-    void implDxInit(IDirect3DDevice9*) noexcept;
     void render() noexcept;
-    void render(IDirect3DDevice9*) noexcept;
     void keyEvent() noexcept;
     void gameStatus() noexcept;
     void initHeroSkin() noexcept;

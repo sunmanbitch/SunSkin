@@ -7,7 +7,6 @@
 
 #include "imgui.h"
 #include "imgui_impl_dx11.h"
-#include "imgui_impl_dx9.h"
 #include "imgui_impl_win32.h"
 
 void Holdon::create_render_target() noexcept
@@ -153,12 +152,6 @@ void Holdon::implDxInit(IDXGISwapChain* device) noexcept
     ::ImGui_ImplDX11_Init(this->d3d11_device, this->d3d11_device_context);
 }
 
-void Holdon::implDxInit(IDirect3DDevice9* device) noexcept
-{
-    this->init_imgui();
-    ::ImGui_ImplDX9_Init(device);
-}
-
 void Holdon::render() noexcept
 {
     const auto& cheatManager{ CheatManager::getInstance() };
@@ -174,31 +167,6 @@ void Holdon::render() noexcept
         ImGui::Render();
         d3d11_device_context->OMSetRenderTargets(1, &main_render_target_view, nullptr);
         ::ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-    }
-}
-
-void Holdon::render(IDirect3DDevice9* device) noexcept
-{
-    const auto& cheatManager{ CheatManager::getInstance() };
-    if (cheatManager.memory->checkRunning()) {
-        ::ImGui_ImplDX9_NewFrame();
-        ::ImGui_ImplWin32_NewFrame();
-        ImGui::NewFrame();
-
-        if (this->gui.is_open) this->gui.render();
-        this->keyEvent();
-        this->gameStatus();
-
-        ImGui::EndFrame();
-        ImGui::Render();
-        unsigned long colorwrite, srgbwrite;
-        device->GetRenderState(D3DRS_COLORWRITEENABLE, &colorwrite);
-        device->GetRenderState(D3DRS_SRGBWRITEENABLE, &srgbwrite);
-        device->SetRenderState(D3DRS_COLORWRITEENABLE, 0xffffffff);
-        device->SetRenderState(D3DRS_SRGBWRITEENABLE, false);
-        ::ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
-        device->SetRenderState(D3DRS_COLORWRITEENABLE, colorwrite);
-        device->SetRenderState(D3DRS_SRGBWRITEENABLE, srgbwrite);
     }
 }
 
