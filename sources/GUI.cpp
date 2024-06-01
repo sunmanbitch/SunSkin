@@ -199,7 +199,7 @@ inline void GUI::heroesTabItem() noexcept
             last_team = hero->team;
         }
 
-        auto& config_array{ is_enemy ? cheatManager.config->current_combo_enemy_skin_index : cheatManager.config->current_combo_ally_skin_index };
+        auto& config_array{ is_enemy ? cheatManager.config->current_combo_enemy_skin_index_view : cheatManager.config->current_combo_ally_skin_index_view };
         if (cheatManager.config->heroName)
             std::snprintf(this->str_buffer, sizeof(this->str_buffer), "HeroName: [ %s ]##%X", heroModelName, reinterpret_cast<std::uintptr_t>(hero));
         else
@@ -343,10 +343,15 @@ inline void GUI::extrasTabItem() noexcept
 
     if (ImGui::Button("No skins except local player"))
     {
-        for (auto& val : cheatManager.config->current_combo_enemy_skin_index | std::views::values)
+        // no save
+        for (auto& val : cheatManager.config->current_combo_enemy_skin_index_origin | std::views::values)
             val = 0;
-
-        for (auto& val : cheatManager.config->current_combo_ally_skin_index | std::views::values)
+        // no save
+        for (auto& val : cheatManager.config->current_combo_ally_skin_index_origin | std::views::values)
+            val = 0;
+        for (auto& val : cheatManager.config->current_combo_enemy_skin_index_view | std::views::values)
+            val = 0;
+        for (auto& val : cheatManager.config->current_combo_ally_skin_index_view | std::views::values)
             val = 0;
 
         for (const auto& hero : arr2vec(AIHero, cheatManager.memory->heroList))
@@ -375,12 +380,14 @@ inline void GUI::extrasTabItem() noexcept
             }
             else {
                 const auto& my_team{ player ? player->team : 100 };
-                auto& config{ hero->team != my_team ? cheatManager.config->current_combo_enemy_skin_index : cheatManager.config->current_combo_ally_skin_index };
+                auto& config{ hero->team != my_team ? cheatManager.config->current_combo_enemy_skin_index_origin : cheatManager.config->current_combo_ally_skin_index_origin };
                 auto& data{ config[championHash] };
                 data = random(1ull, skinCount - 1);
                 hero->change_skin(skinDatabase[data].model_name, skinDatabase[data].skin_id);
             }
         }
+        cheatManager.config->current_combo_enemy_skin_index_view = cheatManager.config->current_combo_enemy_skin_index_origin;
+        cheatManager.config->current_combo_ally_skin_index_view = cheatManager.config->current_combo_ally_skin_index_origin;
     } ImGui::hoverInfo("Randomly changes the skin of all champions.");
 
     ImGui::SliderFloat("Font Scale", &cheatManager.config->fontScale, 1.0f, 2.0f, "%.3f");

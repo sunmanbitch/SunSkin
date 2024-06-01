@@ -48,9 +48,13 @@ public:
     std::int32_t current_combo_order_turret_index{ 0 };
     std::int32_t current_combo_chaos_turret_index{ 0 };
 
-    // other champions
-    std::map<std::uint64_t, std::int32_t> current_combo_ally_skin_index;
-    std::map<std::uint64_t, std::int32_t> current_combo_enemy_skin_index;
+    // save other champions skin index [const]
+    std::map<std::uint64_t, std::int32_t> current_combo_ally_skin_index_origin;
+    std::map<std::uint64_t, std::int32_t> current_combo_enemy_skin_index_origin;
+
+    // other champions skin index for gui enable change
+    std::map<std::uint64_t, std::int32_t> current_combo_ally_skin_index_view;
+    std::map<std::uint64_t, std::int32_t> current_combo_enemy_skin_index_view;
 
     // jungle mobs
     std::map<std::uint64_t, std::int32_t> current_combo_jungle_mob_skin_index;

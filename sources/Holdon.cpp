@@ -364,7 +364,7 @@ void Holdon::initHeroSkin() noexcept
             continue;
 
         const auto& is_enemy{ my_team != hero->team };
-        auto& config_array{ is_enemy ? cheatManager.config->current_combo_enemy_skin_index : cheatManager.config->current_combo_ally_skin_index };
+        auto& config_array{ is_enemy ? cheatManager.config->current_combo_enemy_skin_index_view : cheatManager.config->current_combo_ally_skin_index_view };
         auto& hero_skin_index{ config_array.at(champion_name_hash) };
         if (cheatManager.config->noSkin) hero_skin_index = 0;
         const auto& values{ cheatManager.database->champions_skins[champion_name_hash] };

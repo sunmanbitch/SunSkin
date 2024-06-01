@@ -90,7 +90,7 @@ private:
             Approach::mov_s_x, 0, &offsets::global::Player
         },
         {
-            "48 8B 05 ? ? ? ? 48 8B 78 08 8B 40 10 4C 8D 3C C7 49 3B FF",
+            "48 8B 05 ? ? ? ? 48 8B 78 08 8B 40 10 4C 8D 34 C7 49 3B FE",
             Approach::mov_s_x, 0, &offsets::global::ManagerTemplate_AIHero_
         },
         {
@@ -110,11 +110,11 @@ private:
             Approach::mov_s_x, 0, &offsets::global::Riot__g_window
         },
         {
-            "48 8B 1D ? ? ? ? 49 8D 95 ? ? ? ? 4C 8D",
+            "48 8B 0D ? ? ? ? 48 ? ? ? ? 48 8B 76 ? 4C ? ? ? ?",
             Approach::mov_s_x, 0, &offsets::global::ViewProjMatrix
         },
         {
-            "48 8D 8B ? ? ? ? E8 ?? ?? ?? ?? 49 8D 97 ?? ?? ?? ?? 4C 8D 45 D8",
+            "48 8D 8F ? ? ? ? E8 ? ? ? ? 49 8D 94 24 ? ? ? ? 4C 8D 45 ?",
             Approach::only_read_x, 0, &offsets::ViewProjMatrix::Renderer
         },
         {
@@ -154,7 +154,7 @@ private:
             Approach::call_x, 0, &offsets::functions::GetGoldRedirectTarget
         },
         {
-            "E8 ?? ?? ?? ?? 49 8D 97 ?? ?? ?? ?? 4C 8D 45 D8",
+            "E8 ? ? ? ? 49 8D 94 24 ? ? ? ? 4C 8D 45 ?",
             Approach::call_x, 0, &offsets::functions::WorldToScreen
         }
     };

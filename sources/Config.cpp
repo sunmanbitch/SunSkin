@@ -84,15 +84,18 @@ void Config::load() noexcept
         const auto& heroSkinIndex{ it != skins.end() ? std::distance(skins.begin(), it) : 0 };
 
         const auto& skins_object{ hero->team == my_team ? ally_skins_object : enemy_skins_object };
-        auto& current_combo_skin_index{ hero->team == my_team ? this->current_combo_ally_skin_index : this->current_combo_enemy_skin_index };
+        auto& current_combo_skin_index{ hero->team == my_team ? this->current_combo_ally_skin_index_origin : this->current_combo_enemy_skin_index_origin };
 
-        if (heroSkinIndex != 0 || skins_object == this->config_json.end())
+        if (skins_object == this->config_json.end())
             current_combo_skin_index[heroHash] = heroSkinIndex;
         else if (const auto& it{ skins_object->find(std::to_string(heroHash)) }; it == skins_object->end())
             current_combo_skin_index[heroHash] = heroSkinIndex;
         else
             current_combo_skin_index[heroHash] = it->get<std::int32_t>();
     }
+
+    this->current_combo_ally_skin_index_view = this->current_combo_ally_skin_index_origin;
+    this->current_combo_enemy_skin_index_view = this->current_combo_enemy_skin_index_origin;
 
     const auto& jungle_mobs_skins{ config_json.find("current_combo_jungle_mob_skin_index") };
     for (const auto& [name_hash, _] : cheatManager.database->jungle_mobs_skins)
@@ -130,11 +133,13 @@ void Config::save() noexcept
     config_json["current_ward_skin_id"] = this->current_ward_skin_id;
     config_json["current_combo_minion_index"] = this->current_combo_minion_index;
 
-    for (const auto& [fst, snd] : this->current_combo_ally_skin_index)
-        config_json["current_combo_ally_skin_index"][std::to_string(fst)] = snd;
+    for (const auto& [fst, snd] : this->current_combo_ally_skin_index_view)
+        if (snd != this->current_combo_ally_skin_index_origin[fst])
+            config_json["current_combo_ally_skin_index"][std::to_string(fst)] = snd;
 
-    for (const auto& [fst, snd] : this->current_combo_enemy_skin_index)
-        config_json["current_combo_enemy_skin_index"][std::to_string(fst)] = snd;
+    for (const auto& [fst, snd] : this->current_combo_enemy_skin_index_view)
+        if (snd != this->current_combo_enemy_skin_index_origin[fst])
+            config_json["current_combo_enemy_skin_index"][std::to_string(fst)] = snd;
 
     for (const auto& [fst, snd] : this->current_combo_jungle_mob_skin_index)
         config_json["current_combo_jungle_mob_skin_index"][std::to_string(fst)] = snd;
