@@ -5,7 +5,6 @@
 
 #include "GUI.hpp"
 #include "CheatManager.hpp"
-#include "Translate.hpp"
 #include "Utils.hpp"
 #include "RandomGenerator.hpp"
 #include "AITurret.hpp"
@@ -53,7 +52,7 @@ void GUI::render() noexcept
         }
     );
 
-    if (!ImGui::Begin(LOGO, nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_AlwaysAutoResize))
+    if (!ImGui::Begin("SunSkin", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_AlwaysAutoResize))
     {
         ImGui::End();
         return;
@@ -91,16 +90,16 @@ inline void GUI::playerTabItem() noexcept
     const auto& cheatManager{ CheatManager::getInstance() };
     const auto& player{ cheatManager.memory->localPlayer };
     if (!player) return;
-    if (!ImGui::BeginTabItem(PLAYER)) return;
+    if (!ImGui::BeginTabItem("Local Player")) return;
 
-    ImGui::Text(PLAYERSKINSET);
+    ImGui::Text("Player Skins Settings:");
 
     const auto& champions_skins{ cheatManager.database->champions_skins };
     const auto& heroHashes{ cheatManager.database->heroHash };
     const auto& heroModelName{ player->get_character_data_stack()->base_skin.model.str };
     const auto& values{ champions_skins.at(heroHashes.at(heroModelName)) };
 
-    if (auto& skinIndex{ cheatManager.config->current_combo_skin_index };ImGui::BeginCombo(CURRSKIN, values[skinIndex].skin_name.c_str()))
+    if (auto& skinIndex{ cheatManager.config->current_combo_skin_index };ImGui::BeginCombo("Current Skin", values[skinIndex].skin_name.c_str()))
     {
         for (auto i{ 0u }; i < values.size(); ++i)
         {
@@ -120,7 +119,7 @@ inline void GUI::playerTabItem() noexcept
     const auto& skin{ player->get_character_data_stack()->base_skin.skin };
     const auto& it{ cheatManager.database->specialSkins.find(playerHash) };
     const auto& stack{ player->get_character_data_stack() };
-    if (it != cheatManager.database->specialSkins.end() && it->second.skinIdStart <= skin && it->second.skinIdEnd >= skin && ImGui::BeginCombo(CURRGEAR, it->second.gears[stack->base_skin.gear]))
+    if (it != cheatManager.database->specialSkins.end() && it->second.skinIdStart <= skin && it->second.skinIdEnd >= skin && ImGui::BeginCombo("Current Gear", it->second.gears[stack->base_skin.gear]))
     {
         for (auto i{ 0u }; i < it->second.gears.size(); ++i)
         {
@@ -137,7 +136,7 @@ inline void GUI::playerTabItem() noexcept
     }
     ImGui::Separator();
 
-    if (auto& skinIndex{ cheatManager.config->current_ward_skin_id };ImGui::BeginCombo(CURRWARDSKIN, cheatManager.database->wards_skins[skinIndex]))
+    if (auto& skinIndex{ cheatManager.config->current_ward_skin_id };ImGui::BeginCombo("Current Ward Skin", cheatManager.database->wards_skins[skinIndex]))
     {
         for (auto i{ 0u }; i < cheatManager.database->wards_skins.size(); ++i)
         {

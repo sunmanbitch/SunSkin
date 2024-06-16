@@ -36,7 +36,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
 target_include_directories(${PROJECT_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/headers
     ${CMAKE_CURRENT_SOURCE_DIR}/SDK
-    ${CMAKE_CURRENT_SOURCE_DIR}/translate
     ${imgui_SOURCE_DIR}/backends
     ${imgui_SOURCE_DIR}
 )

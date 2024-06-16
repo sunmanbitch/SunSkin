@@ -20,8 +20,11 @@ void SkinDatabase::loadChampionsSkins() noexcept
 {
     const auto& cheatManager{ CheatManager::getInstance() };
 
-    for (const auto& champion : cheatManager.memory->championManager->champions) {
-        const auto& champ_name{ champion->champion_name.str };
+    const auto& championArray{ cheatManager.memory->championManager->champions };
+    const auto& champions{ std::span<Champion*>{ championArray.list, static_cast<std::size_t>(championArray.size) } };
+
+    for (auto champion : champions) {
+        auto champ_name{ champion->champion_name.str };
 
         if (const auto& it{ this->heroHash.find(champ_name) }; it == this->heroHash.end())
             continue;
