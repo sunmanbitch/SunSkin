@@ -1,10 +1,7 @@
 #pragma once
 
-#include <cstdint>
+#include "RiotArray.hpp"
 
-class AString {
+class AString : public RiotArray<char> {
 public:
-    const char* str;
-    std::int32_t length;
-    std::int32_t capacity;
 };

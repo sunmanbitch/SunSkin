@@ -2,6 +2,7 @@
 
 #include <cstdint>
 
+#include "RiotArray.hpp"
 #include "Pad.hpp"
 
 template <class T>
@@ -9,7 +10,5 @@ class ManagerTemplate {
 private:
     PAD(0x8);
 public:
-    T** list;
-    std::int32_t length;
-    std::int32_t capacity;
+    RiotArray<T*> riotArray;
 };

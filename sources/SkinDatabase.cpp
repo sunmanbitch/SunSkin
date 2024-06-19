@@ -20,11 +20,8 @@ void SkinDatabase::loadChampionsSkins() noexcept
 {
     const auto& cheatManager{ CheatManager::getInstance() };
 
-    const auto& championArray{ cheatManager.memory->championManager->champions };
-    const auto& champions{ std::span<Champion*>{ championArray.list, static_cast<std::size_t>(championArray.size) } };
-
-    for (auto champion : champions) {
-        auto champ_name{ champion->champion_name.str };
+    for (const auto champion : cheatManager.memory->championManager->champions) {
+        auto champ_name{ champion->champion_name.data };
 
         if (const auto& it{ this->heroHash.find(champ_name) }; it == this->heroHash.end())
             continue;
@@ -32,12 +29,11 @@ void SkinDatabase::loadChampionsSkins() noexcept
         const auto champ_name_hash{ this->heroHash[champ_name] };
         std::map<std::string, std::int32_t> temp_skin_list;
 
-        const auto& skinList{ std::span<Skin>{ champion->skins.list, static_cast<std::size_t>(champion->skins.size) } };
-        std::vector<std::int32_t> skin_id_list; skin_id_list.reserve(skinList.size() + 1);
-        std::ranges::transform(skinList, std::back_inserter(skin_id_list), [](const auto& skin) { return skin.skin_id; });
+        std::vector<std::int32_t> skin_id_list;
+        for (const auto& skin : champion->skins) { skin_id_list.emplace_back(skin.skin_id); }
         std::ranges::sort(skin_id_list);
 
-        for (const auto& skin_id : skin_id_list)
+        for (const auto skin_id : skin_id_list)
         {
             const auto& skin_display_name{ std::string("game_character_skin_displayname_") + champ_name + "_" + std::to_string(skin_id) };
             auto skin_display_name_translated{ skin_id > 0 ? std::string(cheatManager.memory->translateString(skin_display_name.c_str())) : std::string(champ_name) };
@@ -81,10 +77,9 @@ void SkinDatabase::loadHeroHash() noexcept
 {
     const auto& cheatManager{ CheatManager::getInstance() };
 
-    for (auto i{ 0u }; i < cheatManager.memory->heroList->length; ++i)
+    for (const auto hero : cheatManager.memory->heroList->riotArray)
     {
-        const auto& hero{ cheatManager.memory->heroList->list[i] };
-        const auto& heroName{ hero->get_character_data_stack()->base_skin.model.str };
+        const auto heroName{ hero->get_character_data_stack()->base_skin.model.data };
         this->heroHash[heroName] = fnv::hash_runtime(heroName);
     }
 }

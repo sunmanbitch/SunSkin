@@ -2,8 +2,6 @@
 
 #include "Holdon.hpp"
 #include "CheatManager.hpp"
-#include "AIHero.hpp"
-#include "AIMinionClient.hpp"
 
 #include "imgui.h"
 #include "imgui_impl_dx11.h"
@@ -183,7 +181,7 @@ void Holdon::keyEvent() noexcept
     if (cheatManager.config->quickSkinChange && ImGui::IsKeyPressed(cheatManager.config->nextSkinKey.imGuiKeyCode))
     {
         if (const auto& player{ cheatManager.memory->localPlayer }; player) {
-            const auto& values{ cheatManager.database->champions_skins[fnv::hash_runtime(player->get_character_data_stack()->base_skin.model.str)] };
+            const auto& values{ cheatManager.database->champions_skins[fnv::hash_runtime(player->get_character_data_stack()->base_skin.model.data)] };
 
             auto& skinIndex{ ++cheatManager.config->current_combo_skin_index };
             if (skinIndex < 0 || skinIndex >= values.size())
@@ -196,7 +194,7 @@ void Holdon::keyEvent() noexcept
     if (cheatManager.config->quickSkinChange && ImGui::IsKeyPressed(cheatManager.config->previousSkinKey.imGuiKeyCode))
     {
         if (const auto& player{ cheatManager.memory->localPlayer }; player) {
-            const auto& values{ cheatManager.database->champions_skins[fnv::hash_runtime(player->get_character_data_stack()->base_skin.model.str)] };
+            const auto& values{ cheatManager.database->champions_skins[fnv::hash_runtime(player->get_character_data_stack()->base_skin.model.data)] };
 
             auto& skinIndex{ --cheatManager.config->current_combo_skin_index };
             if (skinIndex < 0 || skinIndex >= values.size())
@@ -208,7 +206,7 @@ void Holdon::keyEvent() noexcept
 
     if (ImGui::IsKeyPressed(ImGuiKey_5) && ImGui::IsKeyPressed(ImGuiKey_LeftCtrl)) {
         if (const auto& player{ cheatManager.memory->localPlayer }; player) {
-            const auto playerHash{ fnv::hash_runtime(player->get_character_data_stack()->base_skin.model.str) };
+            const auto playerHash{ fnv::hash_runtime(player->get_character_data_stack()->base_skin.model.data) };
 
             const auto& skin{ player->get_character_data_stack()->base_skin.skin };
             const auto& it{ cheatManager.database->specialSkins.find(playerHash) };
@@ -243,7 +241,7 @@ void Holdon::keyEvent() noexcept
             ImGuiTabBarFlags_NoTooltip
         );
 
-        for (const auto& minion : arr2vec(AIMinionClient, cheatManager.memory->minionList))
+        for (const auto minion : cheatManager.memory->minionList->riotArray)
         {
             const auto& position3D{ minion->get_position() };
             Position position2D;
@@ -255,7 +253,7 @@ void Holdon::keyEvent() noexcept
 
             if (!inScreen)
                 continue;
-            ImGui::GetWindowDrawList()->AddText({ position2D.x, position2D.y }, ImColor(255, 255, 0), minion->get_character_data_stack()->base_skin.model.str);
+            ImGui::GetWindowDrawList()->AddText({ position2D.x, position2D.y }, ImColor(255, 255, 0), minion->get_character_data_stack()->base_skin.model.data);
         }
 
         ImGui::End();
@@ -267,14 +265,14 @@ void Holdon::gameStatus() noexcept
 {
     const auto& cheatManager{ CheatManager::getInstance() };
 
-    for (const auto& hero : arr2vec(AIHero, cheatManager.memory->heroList)) {
+    for (const auto hero : cheatManager.memory->heroList->riotArray) {
         const auto& dataStack{ hero->get_character_data_stack() };
 
         if (dataStack->stack.empty())
             continue;
 
         // Viego transforms into another champion as 2nd form, our own skin's id may not match for every champion. (same problem exists in sylas) 
-        if (const auto& championName{ cheatManager.database->heroHash[dataStack->base_skin.model.str] }; championName == FNV("Viego") || championName == FNV("Sylas") || championName == FNV("Neeko"))
+        if (const auto& championName{ cheatManager.database->heroHash[dataStack->base_skin.model.data] }; championName == FNV("Viego") || championName == FNV("Sylas") || championName == FNV("Neeko"))
             continue;
 
         if (auto& stack{ dataStack->stack.front() }; stack.skin != dataStack->base_skin.skin) {
@@ -283,7 +281,7 @@ void Holdon::gameStatus() noexcept
         }
     }
 
-    for (const auto& minion : arr2vec(AIMinionClient, cheatManager.memory->minionList))
+    for (const auto minion : cheatManager.memory->minionList->riotArray)
     {
         const auto& position3D{ minion->get_position() };
         Position position2D;
@@ -324,9 +322,9 @@ void Holdon::gameStatus() noexcept
             }
             else if (minion->isTestCube())
             {
-                if (const auto& base_skin{ owner->get_character_data_stack()->base_skin };cheatManager.database->heroHash[base_skin.model.str] == FNV("Yone"))
+                if (const auto& base_skin{ owner->get_character_data_stack()->base_skin };cheatManager.database->heroHash[base_skin.model.data] == FNV("Yone"))
                 {
-                    minion->change_skin(base_skin.model.str, base_skin.skin, false); // base_skin.model.str == "Yone"
+                    minion->change_skin(base_skin.model.data, base_skin.skin, false); // base_skin.model.data == "Yone"
                 }
             }
             else
@@ -347,19 +345,19 @@ void Holdon::initHeroSkin() noexcept
 
     if (player)
     {
-        const auto& playerHash{ fnv::hash_runtime(player->get_character_data_stack()->base_skin.model.str) };
+        const auto& playerHash{ fnv::hash_runtime(player->get_character_data_stack()->base_skin.model.data) };
         const auto& player_skin_index{ cheatManager.config->current_combo_skin_index };
         const auto& values{ cheatManager.database->champions_skins[playerHash] };
         player->change_skin(values[player_skin_index].model_name, values[player_skin_index].skin_id);
     }
 
     const auto& my_team{ player ? player->team : 100 };
-    for (const auto& hero : arr2vec(AIHero, cheatManager.memory->heroList)) {
+    for (const auto hero : cheatManager.memory->heroList->riotArray) {
 
         if (hero == player)
             continue;
 
-        const auto& champion_name_hash{ fnv::hash_runtime(hero->get_character_data_stack()->base_skin.model.str) };
+        const auto& champion_name_hash{ fnv::hash_runtime(hero->get_character_data_stack()->base_skin.model.data) };
         if (champion_name_hash == FNV("PracticeTool_TargetDummy"))
             continue;
 

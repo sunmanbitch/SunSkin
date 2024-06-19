@@ -7,8 +7,6 @@
 #include "CheatManager.hpp"
 #include "Utils.hpp"
 #include "RandomGenerator.hpp"
-#include "AITurret.hpp"
-#include "AIHero.hpp"
 
 inline void GUI::footer() noexcept
 {
@@ -27,7 +25,7 @@ inline void GUI::changeTurretSkin(const std::int32_t skinId, const std::int32_t 
     const auto& memory{ CheatManager::getInstance().memory };
     const auto& playerTeam{ memory->localPlayer ? memory->localPlayer->team : 100 };
 
-    for (const auto& turret : arr2vec(AITurret, memory->turretList)) {
+    for (const auto turret : memory->turretList->riotArray) {
         if (turret->team != team)
             continue;
 
@@ -96,7 +94,7 @@ inline void GUI::playerTabItem() noexcept
 
     const auto& champions_skins{ cheatManager.database->champions_skins };
     const auto& heroHashes{ cheatManager.database->heroHash };
-    const auto& heroModelName{ player->get_character_data_stack()->base_skin.model.str };
+    const auto& heroModelName{ player->get_character_data_stack()->base_skin.model.data };
     const auto& values{ champions_skins.at(heroHashes.at(heroModelName)) };
 
     if (auto& skinIndex{ cheatManager.config->current_combo_skin_index };ImGui::BeginCombo("Current Skin", values[skinIndex].skin_name.c_str()))
@@ -158,14 +156,12 @@ inline void GUI::heroesTabItem() noexcept
 {
     const auto& cheatManager{ CheatManager::getInstance() };
 
-    const auto& heroes{ arr2vec(AIHero, cheatManager.memory->heroList) };
-    const auto& findFunc{
-        [&cheatManager](const auto& hero)
-        {
-            return hero != cheatManager.memory->localPlayer && cheatManager.database->heroHash[hero->get_character_data_stack()->base_skin.model.str] != FNV("PracticeTool_TargetDummy");
-        }
-    };
-    const auto& heroSize{ std::ranges::count_if(heroes, findFunc) };
+    auto heroSize{ 0 };
+    for (const auto hero : cheatManager.memory->heroList->riotArray) {
+        if (hero == cheatManager.memory->localPlayer || cheatManager.database->heroHash[hero->get_character_data_stack()->base_skin.model.data] == FNV("PracticeTool_TargetDummy")) 
+            continue;
+        heroSize++;
+    }
 
     if (heroSize <= 0) return;
 
@@ -177,11 +173,11 @@ inline void GUI::heroesTabItem() noexcept
     const auto& my_team{ player ? player->team : 100 };
     std::int32_t last_team{ 0 };
 
-    for (const auto& hero : heroes) {
+    for (const auto hero : cheatManager.memory->heroList->riotArray) {
         if (hero == player)
             continue;
 
-        const auto& heroModelName{ hero->get_character_data_stack()->base_skin.model.str };
+        const auto heroModelName{ hero->get_character_data_stack()->base_skin.model.data };
         const auto& heroHashName{ fnv::hash_runtime(heroModelName) };
         if (heroHashName == FNV("PracticeTool_TargetDummy"))
             continue;
@@ -230,7 +226,7 @@ inline void GUI::globalTabItem() noexcept
     const auto& cheatManager{ CheatManager::getInstance() };
     const auto& ha_minion{ cheatManager.database->ha_minion };
 
-    for (const auto& minion : arr2vec(AIMinionClient, cheatManager.memory->minionList))
+    for (const auto minion : cheatManager.memory->minionList->riotArray)
     {
         if (ha_minion.find(minion->getModelHash()) != ha_minion.end())
             return;
@@ -353,7 +349,7 @@ inline void GUI::extrasTabItem() noexcept
         for (auto& val : cheatManager.config->current_combo_ally_skin_index_view | std::views::values)
             val = 0;
 
-        for (const auto& hero : arr2vec(AIHero, cheatManager.memory->heroList))
+        for (const auto hero : cheatManager.memory->heroList->riotArray)
         {
             if (hero == player)
                 continue;
@@ -362,9 +358,9 @@ inline void GUI::extrasTabItem() noexcept
     } ImGui::hoverInfo("Sets the skins of all champions except the local player to the default skin.");
 
     if (ImGui::Button("Random Skins")) {
-        for (const auto& hero : arr2vec(AIHero, cheatManager.memory->heroList))
+        for (const auto hero : cheatManager.memory->heroList->riotArray)
         {
-            const auto championHash{ fnv::hash_runtime(hero->get_character_data_stack()->base_skin.model.str) };
+            const auto championHash{ fnv::hash_runtime(hero->get_character_data_stack()->base_skin.model.data) };
 
             if (championHash == FNV("PracticeTool_TargetDummy"))
                 continue;

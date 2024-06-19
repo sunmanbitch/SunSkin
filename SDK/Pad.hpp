@@ -26,6 +26,3 @@ struct                            \
     PAD(offset);                  \
     DEFINE_MEMBER_0(x);           \
 }
-
-#define arr2vec(obj, ptr) \
-std::span<obj*>{ ptr->list, static_cast<std::size_t>(ptr->length) }

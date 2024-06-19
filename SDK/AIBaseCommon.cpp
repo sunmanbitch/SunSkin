@@ -1,5 +1,4 @@
 #include <cstdint>
-#include <string>
 
 #include "AIBaseCommon.hpp"
 #include "CheatManager.hpp"
@@ -13,8 +12,8 @@ bool AIBaseCommon::checkSpecialSkins(const std::int32_t& skin) noexcept
 
     auto result{ false };
 
-    const auto& champ_name{ fnv::hash_runtime(dataStack->base_skin.model.str) };
-    if (const auto& it{ heroHash.find(dataStack->base_skin.model.str) }; it == heroHash.end() && champ_name != FNV("TestCubeRender10Vision"))
+    const auto& champ_name{ fnv::hash_runtime(dataStack->base_skin.model.data) };
+    if (const auto& it{ heroHash.find(dataStack->base_skin.model.data) }; it == heroHash.end() && champ_name != FNV("TestCubeRender10Vision"))
         return result;
 
     const std::int8_t& zero{ 0 };
@@ -68,7 +67,7 @@ void AIBaseCommon::change_skin(const std::int32_t skin, const bool isEncrypt) no
         if (isEncrypt) this->get_cryption()->encrypt(skin);
         dataStack->base_skin.skin = skin;
         if (!dataStack->stack.empty()) dataStack->stack.clear();
-        dataStack->push(dataStack->base_skin.model.str, skin);
+        dataStack->push(dataStack->base_skin.model.data, skin);
     }
     else if (dataStack->base_skin.skin != skin)
     {
