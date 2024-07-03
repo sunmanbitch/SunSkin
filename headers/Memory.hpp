@@ -114,7 +114,7 @@ private:
             Approach::mov_s_x, 0, &offsets::global::ViewProjMatrix
         },
         {
-            "48 8D 8F ? ? ? ? E8 ? ? ? ? 49 8D 94 24 ? ? ? ? 4C 8D 45 ?",
+            "48 8D 8F ? ? ? ? E8 ? ? ? ? 49 8D 96 ? ? ? ? 4C 8D 45 ?",
             Approach::only_read_x, 0, &offsets::ViewProjMatrix::Renderer
         },
         {
@@ -154,7 +154,7 @@ private:
             Approach::call_x, 0, &offsets::functions::GetGoldRedirectTarget
         },
         {
-            "E8 ? ? ? ? 49 8D 94 24 ? ? ? ? 4C 8D 45 ?",
+            "E8 ? ? ? ? 49 8D 96 ? ? ? ? 4C 8D 45 ?",
             Approach::call_x, 0, &offsets::functions::WorldToScreen
         }
     };
